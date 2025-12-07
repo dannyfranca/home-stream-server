@@ -22,7 +22,8 @@ A complete, production-ready Docker Compose stack for home media streaming with 
 | [Sonarr](http://localhost:8989) | 8989 | TV show automation |
 | [Radarr](http://localhost:7878) | 7878 | Movie automation |
 | [Bazarr](http://localhost:6767) | 6767 | Subtitle management |
-| [Jellyfin](http://localhost:8096) | 8096 | Media streaming server |
+| [Jellyfin](http://localhost:8096) | 8096 | Media streaming server (free) |
+| [Plex](http://localhost:32400/web) | 32400 | Media streaming server (freemium) |
 | [Jellyseerr](http://localhost:5055) | 5055 | Request management |
 
 ## 🚀 Quick Start
@@ -287,7 +288,19 @@ After starting the stack, configure each service:
   - **TV Shows**: `/data/media/tv`
 - Enable **Fetch missing metadata automatically**
 
-### 7. Jellyseerr (http://localhost:5055)
+### 7. Plex (http://localhost:32400/web)
+
+- **First-time setup**: Get a claim token from [plex.tv/claim](https://plex.tv/claim) (valid 4 minutes)
+- Add to `.env`: `PLEX_CLAIM=claim-xxxxx` and restart: `docker compose up -d plex`
+- Or: Access http://localhost:32400/web and sign in with your Plex account
+- Add libraries:
+  - **Movies**: `/data/media/movies`
+  - **TV Shows**: `/data/media/tv`
+- Enable **Automatically update my library**
+
+> 💡 **Plex vs Jellyfin**: Both share the same media. Use whichever you prefer, or both!
+
+### 8. Jellyseerr (http://localhost:5055)
 
 - Sign in with your Jellyfin credentials
 - Add Jellyfin server: `http://jellyfin:8096`

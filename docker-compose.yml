@@ -194,6 +194,31 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
+  # Plex Media Server (Alternative to Jellyfin)
+  # ===========================================================================
+  plex:
+    image: lscr.io/linuxserver/plex:1.42.2.10156-f737b826c-ls286
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+      # Optional: Claim your server at https://plex.tv/claim
+      # - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - ${DATA_PATH}/config/plex:/config
+      - ${DATA_PATH}/media:/data/media
+      # Optional: Use RAM for transcoding (faster)
+      # - /dev/shm:/transcode
+      # Uncomment for hardware transcoding:
+      # Intel QuickSync:
+      # devices:
+      #   - /dev/dri:/dev/dri
+    restart: unless-stopped
+
+  # ===========================================================================
   # Media Request Management UI
   # ===========================================================================
   jellyseerr:
