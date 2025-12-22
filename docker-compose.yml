@@ -18,6 +18,10 @@
 #   2. Run: docker compose up -d
 # =============================================================================
 
+secrets:
+  wireguard_private_key:
+    file: ./secrets/wireguard_private_key.txt
+
 services:
   # ===========================================================================
   # VPN Client - All torrent traffic routes through this container
@@ -29,10 +33,12 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    secrets:
+      - wireguard_private_key
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_PRIVATE_KEY_SECRETFILE=/run/secrets/wireguard_private_key
       - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
       # - SERVER_CITIES=${SERVER_CITIES}
       - TZ=${TZ}
@@ -48,7 +54,7 @@ services:
       - ${DATA_PATH}/config/gluetun:/gluetun
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://ipinfo.io" ]
+      test: ["CMD", "wget", "-q", "--spider", "http://ipinfo.io"]
       interval: 30s
       timeout: 10s
       retries: 3

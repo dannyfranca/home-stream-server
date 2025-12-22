@@ -14,17 +14,17 @@ A complete, production-ready Docker Compose stack for home media streaming with 
 
 ## 📦 Services
 
-| Service | Port | Description |
-|---------|------|-------------|
-| [qBittorrent](http://localhost:8090) | 8090 | Torrent client (VPN protected) |
-| [Prowlarr](http://localhost:9696) | 9696 | Indexer management (VPN protected) |
-| [FlareSolverr](http://localhost:8191) | 8191 | Cloudflare bypass for indexers |
-| [Sonarr](http://localhost:8989) | 8989 | TV show automation |
-| [Radarr](http://localhost:7878) | 7878 | Movie automation |
-| [Bazarr](http://localhost:6767) | 6767 | Subtitle management |
-| [Jellyfin](http://localhost:8096) | 8096 | Media streaming server (free) |
-| [Plex](http://localhost:32400/web) | 32400 | Media streaming server (freemium) |
-| [Jellyseerr](http://localhost:5055) | 5055 | Request management |
+| Service                               | Port  | Description                        |
+| ------------------------------------- | ----- | ---------------------------------- |
+| [qBittorrent](http://localhost:8090)  | 8090  | Torrent client (VPN protected)     |
+| [Prowlarr](http://localhost:9696)     | 9696  | Indexer management (VPN protected) |
+| [FlareSolverr](http://localhost:8191) | 8191  | Cloudflare bypass for indexers     |
+| [Sonarr](http://localhost:8989)       | 8989  | TV show automation                 |
+| [Radarr](http://localhost:7878)       | 7878  | Movie automation                   |
+| [Bazarr](http://localhost:6767)       | 6767  | Subtitle management                |
+| [Jellyfin](http://localhost:8096)     | 8096  | Media streaming server (free)      |
+| [Plex](http://localhost:32400/web)    | 32400 | Media streaming server (freemium)  |
+| [Jellyseerr](http://localhost:5055)   | 5055  | Request management                 |
 
 ## 🚀 Quick Start
 
@@ -84,14 +84,23 @@ curl -s "https://api.nordvpn.com/v1/users/services/credentials" \
   -u token:YOUR_TOKEN | jq -r '.nordlynx_private_key'
 ```
 
-### 3. Configure Your .env File
+### 3. Store Your WireGuard Private Key (Securely)
+
+Store your private key in the secrets directory:
+
+```bash
+cd ~/git/home-stream-server
+echo "your_private_key_here" > secrets/wireguard_private_key.txt
+chmod 600 secrets/wireguard_private_key.txt
+```
+
+> ⚠️ **Security**: The key is stored as a file-based Docker secret, not an environment variable. This prevents exposure via `docker inspect` or process listings. Never commit the `secrets/` directory to git.
+
+### 4. Configure Your .env File
 
 Edit `.env` and fill in:
 
 ```env
-# Your WireGuard private key from step 2
-WIREGUARD_PRIVATE_KEY=your_private_key_here
-
 # Your user/group IDs (run: id -u && id -g)
 PUID=1000
 PGID=1000
@@ -103,7 +112,7 @@ TZ=Europe/London
 DATA_PATH=/srv/media
 ```
 
-### 4. Create Directory Structure
+### 5. Create Directory Structure
 
 ```bash
 # Set your data path (match your .env)
@@ -116,7 +125,7 @@ sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},media/{movies,tv},config/{gluetun
 sudo chown -R $(id -u):$(id -g) $DATA_PATH
 ```
 
-### 5. Start the Stack
+### 6. Start the Stack
 
 ```bash
 # Pull all images
@@ -132,7 +141,7 @@ docker compose ps
 docker compose logs -f
 ```
 
-### 6. Verify VPN Connection
+### 7. Verify VPN Connection
 
 ```bash
 # Check your current public IP
@@ -189,16 +198,16 @@ Understanding how the containers communicate:
 
 Docker Compose creates an internal network where containers communicate using their **service names** as hostnames:
 
-| From | To | Address |
-|------|-----|---------|
+| From          | To          | Address          |
+| ------------- | ----------- | ---------------- |
 | Sonarr/Radarr | qBittorrent | `gluetun:8090` ⚠️ |
-| Prowlarr | Sonarr | `sonarr:8989` |
-| Prowlarr | Radarr | `radarr:7878` |
-| Bazarr | Sonarr | `sonarr:8989` |
-| Bazarr | Radarr | `radarr:7878` |
-| Jellyseerr | Jellyfin | `jellyfin:8096` |
-| Jellyseerr | Sonarr | `sonarr:8989` |
-| Jellyseerr | Radarr | `radarr:7878` |
+| Prowlarr      | Sonarr      | `sonarr:8989`    |
+| Prowlarr      | Radarr      | `radarr:7878`    |
+| Bazarr        | Sonarr      | `sonarr:8989`    |
+| Bazarr        | Radarr      | `radarr:7878`    |
+| Jellyseerr    | Jellyfin    | `jellyfin:8096`  |
+| Jellyseerr    | Sonarr      | `sonarr:8989`    |
+| Jellyseerr    | Radarr      | `radarr:7878`    |
 
 > ⚠️ **Important**: qBittorrent uses Gluetun's network, so connect to `gluetun:8090`, not `qbittorrent:8090`
 
@@ -238,15 +247,15 @@ After starting the stack, configure each service:
 
 #### Recommended Indexers
 
-| Indexer | Best For | FlareSolverr Required |
-|---------|----------|----------------------|
-| **1337x** ⭐ | TV Shows, Movies, General | Yes |
-| **TorrentGalaxy** | Movies (incl. 4K), TV, Games | Sometimes |
-| **EZTV** | TV Shows | No |
-| **LimeTorrents** | General | No |
-| **The Pirate Bay** | General | No |
-| **Nyaa.si** | Anime, Asian media | No |
-| **BitSearch** | Meta-search aggregator | No |
+| Indexer            | Best For                     | FlareSolverr Required |
+| ------------------ | ---------------------------- | --------------------- |
+| **1337x** ⭐        | TV Shows, Movies, General    | Yes                   |
+| **TorrentGalaxy**  | Movies (incl. 4K), TV, Games | Sometimes             |
+| **EZTV**           | TV Shows                     | No                    |
+| **LimeTorrents**   | General                      | No                    |
+| **The Pirate Bay** | General                      | No                    |
+| **Nyaa.si**        | Anime, Asian media           | No                    |
+| **BitSearch**      | Meta-search aggregator       | No                    |
 
 > 💡 **Tips**:
 > - Add **multiple indexers** for redundancy
@@ -344,8 +353,12 @@ jellyfin:
 # Check gluetun logs
 docker logs gluetun
 
+# Verify your secret file exists and has content
+cat secrets/wireguard_private_key.txt
+
 # Common issues:
-# - Invalid WIREGUARD_PRIVATE_KEY
+# - Missing or empty secrets/wireguard_private_key.txt
+# - Invalid WireGuard private key format
 # - Firewall blocking WireGuard (UDP port 51820)
 ```
 
@@ -375,6 +388,12 @@ Ensure Sonarr/Radarr can see the same paths:
 ## 📁 Directory Structure
 
 ```
+home-stream-server/
+├── docker-compose.yml
+├── .env                              # Environment config (git-ignored)
+└── secrets/
+    └── wireguard_private_key.txt     # VPN key (git-ignored, chmod 600)
+
 $DATA_PATH/
 ├── config/
 │   ├── gluetun/        # VPN configuration
