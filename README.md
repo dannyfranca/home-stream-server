@@ -425,6 +425,18 @@ docker compose up -d
 docker image prune -f
 ```
 
+## 🐧 Running on Bazzite / Fedora Atomic
+
+Want to run this stack with Podman Quadlets instead of Docker Compose? Perfect for immutable distributions like Bazzite, Silverblue, or Kinoite.
+
+👉 **See [QUADLET.md](QUADLET.md) for the complete guide.**
+
+Quick overview:
+1. Install `podlet` to convert docker-compose.yml to Quadlet files
+2. Store your WireGuard key as a Podman secret
+3. Generate and install the Quadlet files
+4. Enable systemd user services
+
 ## 📜 License
 
 MIT License - Use freely for personal purposes.
