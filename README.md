@@ -425,7 +425,7 @@ docker compose up -d
 docker image prune -f
 ```
 
-## 🐧 Running on Bazzite / Fedora Atomic
+## 🐧 Running on Bazzite / Fedora Atomic [Work In Progress]
 
 Want to run this stack with Podman Quadlets instead of Docker Compose? Perfect for immutable distributions like Bazzite, Silverblue, or Kinoite.
 

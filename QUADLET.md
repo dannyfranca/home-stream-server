@@ -1,4 +1,4 @@
-# 🎬 Running Home Stream Server with Quadlets on Bazzite
+# Running Home Stream Server with Quadlets on Bazzite [Work In Progress]
 
 This guide covers deploying the Home Stream Server stack using **Podman Quadlets** on Bazzite (or any Fedora Atomic/immutable distribution).
 
