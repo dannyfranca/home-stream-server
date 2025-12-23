@@ -436,6 +436,15 @@ podman unshare chown -R 1000:1000 $DATA_PATH
 chmod -R 777 $DATA_PATH/torrents $DATA_PATH/media
 ```
 
+### SELinux Permission Denied (Fedora/Bazzite)
+
+If logs show `Permission denied` or `not writable` even with correct ownership:
+
+```bash
+# Update SELinux labels to allow container access
+podman unshare chcon -R -t container_file_t $DATA_PATH
+```
+
 ## Downloads Not Moving to Library
 
 Ensure Sonarr/Radarr paths match:
