@@ -45,6 +45,13 @@ services:
       # Kill switch - block traffic if VPN drops
       - FIREWALL_VPN_INPUT_PORTS=
       - FIREWALL_INPUT_PORTS=${QBITTORRENT_PORT},${PROWLARR_PORT}
+      # Allow outbound traffic to local networks (for flaresolverr, sonarr, radarr, etc.)
+      # These are RFC 1918 private IP ranges - they cover all standard container and home networks:
+      #   - 10.88.0.0/16: Podman default network
+      #   - 172.16.0.0/12: Docker default + compose networks
+      #   - 192.168.0.0/16: Most home LANs
+      # Override via LOCAL_NETWORK_SUBNETS in .env if your setup differs
+      - FIREWALL_OUTBOUND_SUBNETS=${LOCAL_NETWORK_SUBNETS:-10.88.0.0/16,172.16.0.0/12,192.168.0.0/16}
     ports:
       # qBittorrent WebUI (exposed through gluetun)
       - "${QBITTORRENT_PORT:-8090}:${QBITTORRENT_PORT:-8090}"
@@ -52,6 +59,10 @@ services:
       - "${PROWLARR_PORT:-9696}:${PROWLARR_PORT:-9696}"
     volumes:
       - gluetun_config:/gluetun
+    # Allow containers using gluetun's network to resolve other container names
+    # This is required for Podman where VPN DNS can't resolve container hostnames
+    extra_hosts:
+      - "flaresolverr:host-gateway"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://ipinfo.io"]
