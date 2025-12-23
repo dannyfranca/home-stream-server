@@ -33,12 +33,14 @@ spec:
           value: "Netherlands"
         - name: TZ
           value: "Europe/London"
+        - name: DNS_KEEP_NAMESERVER
+          value: "on"
         - name: FIREWALL_VPN_INPUT_PORTS
           value: ""
         - name: FIREWALL_INPUT_PORTS
           value: "8090,9696"
         - name: FIREWALL_OUTBOUND_SUBNETS
-          value: "10.88.0.0/16,172.16.0.0/12,192.168.0.0/16"
+          value: "10.88.0.0/16,172.16.0.0/12,192.168.0.0/16,10.89.0.0/16"
       volumeMounts:
         - name: gluetun-config
           mountPath: /gluetun
