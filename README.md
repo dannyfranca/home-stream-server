@@ -130,6 +130,9 @@ sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},media/{movies,tv}}
 # Set ownership to your user
 sudo chown -R $(id -u):$(id -g) $DATA_PATH
 
+# (Fedora/Bazzite Users) Allow container access via SELinux
+podman unshare chcon -R -t container_file_t $DATA_PATH
+
 # Verify permissions
 ls -la $DATA_PATH
 ```
