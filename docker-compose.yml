@@ -15,12 +15,12 @@
 #
 # Usage:
 #   1. Copy .env.example to .env and configure
-#   2. Run: docker compose up -d
+#   2. Run: docker compose up -d (or podman compose up -d)
+#
+# Note: Config directories use named volumes for Podman rootless compatibility.
+#       Media/torrents use bind mounts for easy access from the host.
 # =============================================================================
 
-secrets:
-  wireguard_private_key:
-    file: ./secrets/wireguard_private_key.txt
 
 services:
   # ===========================================================================
@@ -29,16 +29,16 @@ services:
   gluetun:
     image: docker.io/qmcgaw/gluetun:v3.40.3
     container_name: gluetun
+    # Required for Podman rootless mode to access TUN device
+    privileged: true
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
-    secrets:
-      - wireguard_private_key
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY_SECRETFILE=/run/secrets/wireguard_private_key
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
       - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
       # - SERVER_CITIES=${SERVER_CITIES}
       - TZ=${TZ}
@@ -51,7 +51,7 @@ services:
       # Prowlarr WebUI (exposed through gluetun)
       - "${PROWLARR_PORT:-9696}:${PROWLARR_PORT:-9696}"
     volumes:
-      - ${DATA_PATH}/config/gluetun:/gluetun
+      - gluetun_config:/gluetun
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://ipinfo.io"]
@@ -76,7 +76,7 @@ services:
       - TZ=${TZ}
       - WEBUI_PORT=${QBITTORRENT_PORT:-8090}
     volumes:
-      - ${DATA_PATH}/config/qbittorrent:/config
+      - qbittorrent_config:/config
       - ${DATA_PATH}/torrents:/data/torrents
     restart: unless-stopped
 
@@ -95,7 +95,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DATA_PATH}/config/prowlarr:/config
+      - prowlarr_config:/config
     restart: unless-stopped
 
   # ===========================================================================
@@ -123,7 +123,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DATA_PATH}/config/sonarr:/config
+      - sonarr_config:/config
       - ${DATA_PATH}:/data
     ports:
       - "${SONARR_PORT:-8989}:8989"
@@ -140,7 +140,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DATA_PATH}/config/radarr:/config
+      - radarr_config:/config
       - ${DATA_PATH}:/data
     ports:
       - "${RADARR_PORT:-7878}:7878"
@@ -157,7 +157,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DATA_PATH}/config/bazarr:/config
+      - bazarr_config:/config
       - ${DATA_PATH}/media:/data/media
     ports:
       - "${BAZARR_PORT:-6767}:6767"
@@ -175,7 +175,7 @@ services:
       - TZ=${TZ}
       # Optional: JELLYFIN_PublishedServerUrl for reverse proxy
     volumes:
-      - ${DATA_PATH}/config/jellyfin:/config
+      - jellyfin_config:/config
       - ${DATA_PATH}/media:/data/media
       # Optional: Use RAM for transcoding (faster)
       # - /dev/shm:/transcode
@@ -214,7 +214,7 @@ services:
       # Optional: Claim your server at https://plex.tv/claim
       # - PLEX_CLAIM=${PLEX_CLAIM}
     volumes:
-      - ${DATA_PATH}/config/plex:/config
+      - plex_config:/config
       - ${DATA_PATH}/media:/data/media
       # Optional: Use RAM for transcoding (faster)
       # - /dev/shm:/transcode
@@ -234,9 +234,23 @@ services:
       - TZ=${TZ}
       - LOG_LEVEL=info
     volumes:
-      - ${DATA_PATH}/config/jellyseerr:/app/config
+      - jellyseerr_config:/app/config
     ports:
       - "${JELLYSEERR_PORT:-5055}:5055"
     restart: unless-stopped
     depends_on:
       - jellyfin
+
+# =============================================================================
+# Named Volumes - Managed by Docker/Podman for automatic permissions
+# =============================================================================
+volumes:
+  gluetun_config:
+  qbittorrent_config:
+  prowlarr_config:
+  sonarr_config:
+  radarr_config:
+  bazarr_config:
+  jellyfin_config:
+  plex_config:
+  jellyseerr_config:

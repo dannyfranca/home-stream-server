@@ -30,8 +30,8 @@ A complete, production-ready Docker Compose stack for home media streaming with 
 
 ### Prerequisites
 
-- Docker Engine 20.10+
-- Docker Compose V2
+- Docker Engine 20.10+ or Podman
+- Docker Compose V2 or Podman Compose
 - NordVPN subscription
 
 ### 1. Clone and Configure
@@ -84,21 +84,9 @@ curl -s "https://api.nordvpn.com/v1/users/services/credentials" \
   -u token:YOUR_TOKEN | jq -r '.nordlynx_private_key'
 ```
 
-### 3. Store Your WireGuard Private Key (Securely)
-
-Store your private key in the secrets directory:
-
-```bash
-cd ~/git/home-stream-server
-echo "your_private_key_here" > secrets/wireguard_private_key.txt
-chmod 600 secrets/wireguard_private_key.txt
-```
-
-> ⚠️ **Security**: The key is stored as a file-based Docker secret, not an environment variable. This prevents exposure via `docker inspect` or process listings. Never commit the `secrets/` directory to git.
-
-### 4. Configure Your .env File
-
-Edit `.env` and fill in:
+### 3. Configure Your .env File
+ 
+Edit `.env` and fill in your configuration, including the WireGuard private key you obtained in the previous step:
 
 ```env
 # Your user/group IDs (run: id -u && id -g)
@@ -110,38 +98,50 @@ TZ=Europe/London
 
 # Where to store data (must have enough space!)
 DATA_PATH=/srv/media
+
+# NordVPN WireGuard Private Key
+WIREGUARD_PRIVATE_KEY=your_private_key_here
 ```
 
-### 5. Create Directory Structure
+> 💡 **Podman Support**: This stack is fully compatible with Podman Compose. Using an environment variable for the WireGuard key ensures seamless operation in rootless environments.
+
+### 4. Create Media Directory Structure
+
+Config directories are managed automatically using named volumes. You only need to create the **media and torrent directories** for bind mounts:
 
 ```bash
 # Set your data path (match your .env)
-DATA_PATH=/srv/media
+DATA_PATH=/var/home/YOUR_USER/media
 
-# Create all required directories
-sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},media/{movies,tv},config/{gluetun,qbittorrent,prowlarr,sonarr,radarr,bazarr,jellyfin,jellyseerr}}
+# Create media and torrent directories
+sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},media/{movies,tv}}
 
 # Set ownership to your user
 sudo chown -R $(id -u):$(id -g) $DATA_PATH
+
+# Verify permissions
+ls -la $DATA_PATH
 ```
 
-### 6. Start the Stack
+> 💡 **Podman Users**: If using Podman in rootless mode, you may need to use `podman unshare` for proper UID mapping. See the [Troubleshooting](#permission-denied-errors) section for details.
+
+### 5. Start the Stack
 
 ```bash
 # Pull all images
-docker compose pull
+docker compose pull # or 'podman compose pull'
 
 # Start all services
-docker compose up -d
+docker compose up -d # or 'podman compose up -d'
 
 # Check status
-docker compose ps
+docker compose ps # or 'podman compose ps'
 
 # View logs (optional)
-docker compose logs -f
+docker compose logs -f # or 'podman compose logs -f'
 ```
 
-### 7. Verify VPN Connection
+### 6. Verify VPN Connection
 
 ```bash
 # Check your current public IP
@@ -351,15 +351,15 @@ jellyfin:
 
 ```bash
 # Check gluetun logs
-docker logs gluetun
+docker logs gluetun # or 'podman logs gluetun'
 
-# Verify your secret file exists and has content
-cat secrets/wireguard_private_key.txt
+# Verify your .env file contains the key
+grep WIREGUARD_PRIVATE_KEY .env
 
 # Common issues:
-# - Missing or empty secrets/wireguard_private_key.txt
-# - Invalid WireGuard private key format
+# - Missing or invalid WIREGUARD_PRIVATE_KEY in .env
 # - Firewall blocking WireGuard (UDP port 51820)
+# - (Podman) Missing TUN device access (gluetun handles this but check logs)
 ```
 
 ### Containers Can't Communicate
@@ -370,13 +370,63 @@ Make sure to use container names, not `localhost`:
 
 ### Permission Denied Errors
 
+Permission issues are common with Podman rootless mode due to UID/GID namespace mapping.
+
+#### For Docker Users
+
 ```bash
 # Verify PUID/PGID match your user
-id -u  # Should match PUID
-id -g  # Should match PGID
+id -u  # Should match PUID in .env
+id -g  # Should match PGID in .env
 
-# Fix ownership
+# Fix ownership of media directories
 sudo chown -R $(id -u):$(id -g) $DATA_PATH
+```
+
+#### For Podman Rootless Users
+
+Podman maps container UIDs to different host UIDs. Use `podman unshare` to set permissions correctly:
+
+```bash
+# Set your data path
+DATA_PATH=/var/home/yourusername/media
+
+# Option 1: Use podman unshare to fix ownership (recommended)
+# This sets ownership to UID 1000 inside the container's user namespace
+podman unshare chown -R 1000:1000 $DATA_PATH
+
+# Option 2: Make directories world-writable (less secure, but works)
+chmod -R 777 $DATA_PATH/torrents $DATA_PATH/media
+
+# Check what the container sees
+podman unshare ls -la $DATA_PATH
+```
+
+#### TUN Device Permission Denied (Gluetun)
+
+If you see `open /dev/net/tun: permission denied`, the compose file already includes `privileged: true` for gluetun. If issues persist:
+
+```bash
+# Verify TUN device exists
+ls -la /dev/net/tun
+
+# Check gluetun logs
+podman logs gluetun
+```
+
+#### Config Volume Permissions
+
+Config directories use **named volumes** which are managed automatically by Docker/Podman. If you need to access config data:
+
+```bash
+# List volumes
+podman volume ls
+
+# Inspect a volume to find its location
+podman volume inspect sonarr_config
+
+# Access volume data (Podman)
+podman unshare ls -la $(podman volume inspect sonarr_config --format '{{.Mountpoint}}')
 ```
 
 ### Downloads Not Moving to Library
@@ -390,27 +440,31 @@ Ensure Sonarr/Radarr can see the same paths:
 ```
 home-stream-server/
 ├── docker-compose.yml
-├── .env                              # Environment config (git-ignored)
-└── secrets/
-    └── wireguard_private_key.txt     # VPN key (git-ignored, chmod 600)
+└── .env                              # Environment config (git-ignored)
 
+# Named Volumes (managed by Docker/Podman - no manual setup needed)
+# Use 'podman volume ls' or 'docker volume ls' to see them
+gluetun_config
+qbittorrent_config
+prowlarr_config
+sonarr_config
+radarr_config
+bazarr_config
+jellyfin_config
+plex_config
+jellyseerr_config
+
+# Bind Mounts (you create these)
 $DATA_PATH/
-├── config/
-│   ├── gluetun/        # VPN configuration
-│   ├── qbittorrent/    # Torrent client settings
-│   ├── prowlarr/       # Indexer settings
-│   ├── sonarr/         # TV automation settings
-│   ├── radarr/         # Movie automation settings
-│   ├── bazarr/         # Subtitle settings
-│   ├── jellyfin/       # Media server settings
-│   └── jellyseerr/     # Request manager settings
 ├── torrents/
 │   ├── movies/         # Movie downloads in progress
 │   └── tv/             # TV downloads in progress
 └── media/
-    ├── movies/         # Completed movies (Jellyfin library)
-    └── tv/             # Completed TV shows (Jellyfin library)
+    ├── movies/         # Completed movies (library)
+    └── tv/             # Completed TV shows (library)
 ```
+
+> 💡 **Why named volumes for config?** Named volumes are managed by the container runtime and avoid permission issues in Podman rootless mode. Your media files use bind mounts so you can easily access them from the host.
 
 ## 🔄 Updates
 
