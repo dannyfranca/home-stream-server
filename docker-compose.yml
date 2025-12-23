@@ -27,7 +27,7 @@ services:
   # VPN Client - All torrent traffic routes through this container
   # ===========================================================================
   gluetun:
-    image: qmcgaw/gluetun:v3.40.3
+    image: docker.io/qmcgaw/gluetun:v3.40.3
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -228,7 +228,7 @@ services:
   # Media Request Management UI
   # ===========================================================================
   jellyseerr:
-    image: fallenbagel/jellyseerr:2.7.3
+    image: docker.io/fallenbagel/jellyseerr:2.7.3
     container_name: jellyseerr
     environment:
       - TZ=${TZ}
