@@ -1,0 +1,32 @@
+[Unit]
+Description=Plex Media Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=lscr.io/linuxserver/plex:1.42.2.10156-f737b826c-ls286
+ContainerName=plex
+
+# Host networking for discovery and DLNA
+Network=host
+
+Environment=PUID=1000
+Environment=PGID=1000
+Environment=TZ=Europe/London
+Environment=VERSION=docker
+# Uncomment and set claim token for first-time setup:
+# Environment=PLEX_CLAIM=claim-xxxxxxxxxxxxxxxxxxxx
+
+Volume=plex-config:/config
+# TODO: Update this path to your media directory
+Volume=/var/home/YOUR_USER/media/media:/data/media:ro
+
+# Uncomment for Intel QuickSync hardware transcoding:
+# AddDevice=/dev/dri
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,18 @@
+[Unit]
+Description=Media Streaming Pod (jellyfin + jellyseerr)
+After=network-online.target
+Wants=network-online.target
+
+[Kube]
+Yaml=media-streaming.yaml
+Network=home-stream.network
+
+# Uncomment for Intel QuickSync hardware transcoding:
+# AddDevice=/dev/dri
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,5 @@
+[Network]
+# Shared network for home-stream-server pods
+Driver=bridge
+# Enable DNS resolution for container hostnames
+Internal=false

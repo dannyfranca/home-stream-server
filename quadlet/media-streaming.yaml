@@ -1,0 +1,66 @@
+# Media Streaming Pod
+# Containers: jellyfin, jellyseerr
+# Jellyseerr connects to Jellyfin via localhost
+#
+# CONFIGURATION: Edit the values below before deploying
+apiVersion: v1
+kind: Pod
+metadata:
+  name: media-streaming
+  labels:
+    app: media-streaming
+spec:
+  containers:
+    # =========================================================================
+    # Jellyfin - Media Server
+    # =========================================================================
+    - name: jellyfin
+      image: lscr.io/linuxserver/jellyfin:10.11.4ubu2404-ls10
+      env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/London"
+      ports:
+        - containerPort: 8096
+          hostPort: 8096
+      volumeMounts:
+        - name: jellyfin-config
+          mountPath: /config
+        - name: media
+          mountPath: /data/media
+      # Uncomment for Intel QuickSync hardware transcoding:
+      # securityContext:
+      #   privileged: true
+
+    # =========================================================================
+    # Jellyseerr - Request Management
+    # =========================================================================
+    - name: jellyseerr
+      image: docker.io/fallenbagel/jellyseerr:2.7.3
+      env:
+        - name: TZ
+          value: "Europe/London"
+        - name: LOG_LEVEL
+          value: "info"
+      ports:
+        - containerPort: 5055
+          hostPort: 5055
+      volumeMounts:
+        - name: jellyseerr-config
+          mountPath: /app/config
+
+  volumes:
+    - name: jellyfin-config
+      persistentVolumeClaim:
+        claimName: jellyfin-config
+    - name: jellyseerr-config
+      persistentVolumeClaim:
+        claimName: jellyseerr-config
+    # TODO: Update this path to your media directory
+    - name: media
+      hostPath:
+        path: /var/home/YOUR_USER/media/media
+        type: Directory

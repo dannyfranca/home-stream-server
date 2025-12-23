@@ -1,0 +1,96 @@
+# VPN Services Pod
+# Containers: gluetun (VPN), qbittorrent, prowlarr
+# All containers share gluetun's network namespace for VPN routing
+#
+# CONFIGURATION: Edit the values below before deploying
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vpn-services
+  labels:
+    app: vpn-services
+spec:
+  containers:
+    # =========================================================================
+    # Gluetun - VPN Gateway
+    # =========================================================================
+    - name: gluetun
+      image: docker.io/qmcgaw/gluetun:v3.40.3
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+            - NET_ADMIN
+      env:
+        - name: VPN_SERVICE_PROVIDER
+          value: "nordvpn"
+        - name: VPN_TYPE
+          value: "wireguard"
+        # TODO: Set your NordVPN WireGuard private key
+        - name: WIREGUARD_PRIVATE_KEY
+          value: "YOUR_WIREGUARD_PRIVATE_KEY_HERE"
+        - name: SERVER_COUNTRIES
+          value: "Netherlands"
+        - name: TZ
+          value: "Europe/London"
+        - name: FIREWALL_VPN_INPUT_PORTS
+          value: ""
+        - name: FIREWALL_INPUT_PORTS
+          value: "8090,9696"
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "10.88.0.0/16,172.16.0.0/12,192.168.0.0/16"
+      volumeMounts:
+        - name: gluetun-config
+          mountPath: /gluetun
+
+    # =========================================================================
+    # qBittorrent - Torrent Client (uses gluetun's network)
+    # =========================================================================
+    - name: qbittorrent
+      image: lscr.io/linuxserver/qbittorrent:5.1.4-r1-ls431
+      env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/London"
+        - name: WEBUI_PORT
+          value: "8090"
+      volumeMounts:
+        - name: qbittorrent-config
+          mountPath: /config
+        - name: torrents
+          mountPath: /data/torrents
+
+    # =========================================================================
+    # Prowlarr - Indexer Manager (uses gluetun's network)
+    # =========================================================================
+    - name: prowlarr
+      image: lscr.io/linuxserver/prowlarr:2.3.0.5236-ls133
+      env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/London"
+      volumeMounts:
+        - name: prowlarr-config
+          mountPath: /config
+
+  volumes:
+    - name: gluetun-config
+      persistentVolumeClaim:
+        claimName: gluetun-config
+    - name: qbittorrent-config
+      persistentVolumeClaim:
+        claimName: qbittorrent-config
+    - name: prowlarr-config
+      persistentVolumeClaim:
+        claimName: prowlarr-config
+    # TODO: Update this path to your torrents directory
+    - name: torrents
+      hostPath:
+        path: /var/home/YOUR_USER/media/torrents
+        type: Directory

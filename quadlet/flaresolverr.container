@@ -1,0 +1,22 @@
+[Unit]
+Description=FlareSolverr - Cloudflare bypass for indexers
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/flaresolverr/flaresolverr:v3.4.6
+ContainerName=flaresolverr
+
+Environment=LOG_LEVEL=info
+Environment=LOG_HTML=false
+Environment=TZ=Europe/London
+
+Network=home-stream.network
+PublishPort=8191:8191
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

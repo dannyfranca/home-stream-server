@@ -1,0 +1,20 @@
+[Unit]
+Description=VPN Services Pod (gluetun + qbittorrent + prowlarr)
+After=network-online.target
+Wants=network-online.target
+
+[Kube]
+Yaml=vpn-services.yaml
+Network=home-stream.network
+
+# Note: TUN device access is handled by privileged: true in the YAML
+# Port exposure
+PublishPort=8090:8090
+PublishPort=9696:9696
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

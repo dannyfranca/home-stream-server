@@ -1,0 +1,15 @@
+[Unit]
+Description=Media Automation Pod (sonarr + radarr + bazarr)
+After=network-online.target vpn-services.service
+Wants=network-online.target
+
+[Kube]
+Yaml=media-automation.yaml
+Network=home-stream.network
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
