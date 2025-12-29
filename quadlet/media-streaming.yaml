@@ -15,7 +15,7 @@ spec:
     # Jellyfin - Media Server
     # =========================================================================
     - name: jellyfin
-      image: lscr.io/linuxserver/jellyfin:10.11.4ubu2404-ls10
+      image: lscr.io/linuxserver/jellyfin:10.11.4
       env:
         - name: PUID
           value: "1000"
@@ -32,8 +32,8 @@ spec:
         - name: media
           mountPath: /data/media
       # Uncomment for Intel QuickSync hardware transcoding:
-      # securityContext:
-      #   privileged: true
+      securityContext:
+        privileged: true
 
     # =========================================================================
     # Jellyseerr - Request Management

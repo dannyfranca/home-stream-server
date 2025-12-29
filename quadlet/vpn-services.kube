@@ -6,6 +6,7 @@ Wants=network-online.target
 [Kube]
 Yaml=vpn-services.yaml
 Network=home-stream.network
+AutoUpdate=registry
 
 # Note: TUN device access is handled by privileged: true in the YAML
 # Port exposure

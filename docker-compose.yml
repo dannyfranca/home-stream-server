@@ -27,7 +27,7 @@ services:
   # VPN Client - All torrent traffic routes through this container
   # ===========================================================================
   gluetun:
-    image: docker.io/qmcgaw/gluetun:v3.40.3
+    image: docker.io/qmcgaw/gluetun:v3
     container_name: gluetun
     # Required for Podman rootless mode to access TUN device
     privileged: true
@@ -77,7 +77,7 @@ services:
   # Torrent Client - Routes through VPN via gluetun network
   # ===========================================================================
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.1.4-r1-ls431
+    image: lscr.io/linuxserver/qbittorrent:5.1.4
     container_name: qbittorrent
     network_mode: "service:gluetun"
     depends_on:
@@ -97,7 +97,7 @@ services:
   # Usenet Downloader - Routes through VPN via gluetun network
   # ===========================================================================
   sabnzbd:
-    image: lscr.io/linuxserver/sabnzbd:latest
+    image: lscr.io/linuxserver/sabnzbd:4.5.5
     container_name: sabnzbd
     network_mode: "service:gluetun"
     depends_on:
@@ -116,7 +116,7 @@ services:
   # Indexer Manager - Routes through VPN for privacy
   # ===========================================================================
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.3.0.5236-ls133
+    image: lscr.io/linuxserver/prowlarr:2.3.0
     container_name: prowlarr
     network_mode: "service:gluetun"
     depends_on:
@@ -148,7 +148,7 @@ services:
   # TV Show Automation
   # ===========================================================================
   sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.16.2944-ls299
+    image: lscr.io/linuxserver/sonarr:4.0.16
     container_name: sonarr
     environment:
       - PUID=${PUID}
@@ -165,7 +165,7 @@ services:
   # Movie Automation
   # ===========================================================================
   radarr:
-    image: lscr.io/linuxserver/radarr:6.0.4.10291-ls288
+    image: lscr.io/linuxserver/radarr:6.0.4
     container_name: radarr
     environment:
       - PUID=${PUID}
@@ -182,7 +182,7 @@ services:
   # Automatic Subtitle Downloads
   # ===========================================================================
   bazarr:
-    image: lscr.io/linuxserver/bazarr:v1.5.3-ls326
+    image: lscr.io/linuxserver/bazarr:1.5.3
     container_name: bazarr
     environment:
       - PUID=${PUID}
@@ -199,7 +199,7 @@ services:
   # Media Streaming Server
   # ===========================================================================
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:10.11.4ubu2404-ls10
+    image: lscr.io/linuxserver/jellyfin:10.11.4
     container_name: jellyfin
     environment:
       - PUID=${PUID}
