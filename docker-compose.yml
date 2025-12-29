@@ -44,7 +44,7 @@ services:
       - TZ=${TZ}
       # Kill switch - block traffic if VPN drops
       - FIREWALL_VPN_INPUT_PORTS=
-      - FIREWALL_INPUT_PORTS=${QBITTORRENT_PORT},${PROWLARR_PORT}
+      - FIREWALL_INPUT_PORTS=${QBITTORRENT_PORT},${PROWLARR_PORT},${SABNZBD_PORT}
       # Allow outbound traffic to local networks (for flaresolverr, sonarr, radarr, etc.)
       # These are RFC 1918 private IP ranges - they cover all standard container and home networks:
       #   - 10.88.0.0/16: Podman default network
@@ -55,6 +55,8 @@ services:
     ports:
       # qBittorrent WebUI (exposed through gluetun)
       - "${QBITTORRENT_PORT:-8090}:${QBITTORRENT_PORT:-8090}"
+      # SABnzbd WebUI (exposed through gluetun)
+      - "${SABNZBD_PORT:-8080}:${SABNZBD_PORT:-8080}"
       # Prowlarr WebUI (exposed through gluetun)
       - "${PROWLARR_PORT:-9696}:${PROWLARR_PORT:-9696}"
     volumes:
@@ -89,6 +91,25 @@ services:
     volumes:
       - qbittorrent_config:/config
       - ${DATA_PATH}/torrents:/data/torrents
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Usenet Downloader - Routes through VPN via gluetun network
+  # ===========================================================================
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - sabnzbd_config:/config
+      - ${DATA_PATH}/usenet:/data/usenet
     restart: unless-stopped
 
   # ===========================================================================
@@ -211,31 +232,6 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
-  # Plex Media Server (Alternative to Jellyfin)
-  # ===========================================================================
-  plex:
-    image: lscr.io/linuxserver/plex:1.42.2.10156-f737b826c-ls286
-    container_name: plex
-    network_mode: host
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - VERSION=docker
-      # Optional: Claim your server at https://plex.tv/claim
-      # - PLEX_CLAIM=${PLEX_CLAIM}
-    volumes:
-      - plex_config:/config
-      - ${DATA_PATH}/media:/data/media
-      # Optional: Use RAM for transcoding (faster)
-      # - /dev/shm:/transcode
-      # Uncomment for hardware transcoding:
-      # Intel QuickSync:
-      # devices:
-      #   - /dev/dri:/dev/dri
-    restart: unless-stopped
-
-  # ===========================================================================
   # Media Request Management UI
   # ===========================================================================
   jellyseerr:
@@ -258,10 +254,10 @@ services:
 volumes:
   gluetun_config:
   qbittorrent_config:
+  sabnzbd_config:
   prowlarr_config:
   sonarr_config:
   radarr_config:
   bazarr_config:
   jellyfin_config:
-  plex_config:
   jellyseerr_config:

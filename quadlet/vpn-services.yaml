@@ -38,7 +38,7 @@ spec:
         - name: FIREWALL_VPN_INPUT_PORTS
           value: ""
         - name: FIREWALL_INPUT_PORTS
-          value: "8090,9696"
+          value: "8090,8080,9696"
         - name: FIREWALL_OUTBOUND_SUBNETS
           value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
       volumeMounts:
@@ -66,6 +66,24 @@ spec:
           mountPath: /data/torrents
 
     # =========================================================================
+    # SABnzbd - Usenet Downloader (uses gluetun's network)
+    # =========================================================================
+    - name: sabnzbd
+      image: lscr.io/linuxserver/sabnzbd:latest
+      env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/London"
+      volumeMounts:
+        - name: sabnzbd-config
+          mountPath: /config
+        - name: usenet
+          mountPath: /data/usenet
+
+    # =========================================================================
     # Prowlarr - Indexer Manager (uses gluetun's network)
     # =========================================================================
     - name: prowlarr
@@ -88,6 +106,9 @@ spec:
     - name: qbittorrent-config
       persistentVolumeClaim:
         claimName: qbittorrent-config
+    - name: sabnzbd-config
+      persistentVolumeClaim:
+        claimName: sabnzbd-config
     - name: prowlarr-config
       persistentVolumeClaim:
         claimName: prowlarr-config
@@ -95,4 +116,9 @@ spec:
     - name: torrents
       hostPath:
         path: /var/home/YOUR_USER/media/torrents
+        type: Directory
+    # TODO: Update this path to your usenet directory
+    - name: usenet
+      hostPath:
+        path: /var/home/YOUR_USER/media/usenet
         type: Directory

@@ -9,6 +9,7 @@ graph LR
     subgraph vpn["vpn-services (Pod)"]
         G[gluetun]
         Q[qbittorrent]
+        SAB[sabnzbd]
         P[prowlarr]
     end
     subgraph auto["media-automation (Pod)"]
@@ -21,11 +22,12 @@ graph LR
         JS[jellyseerr]
     end
     F[flaresolverr]
-    PX[plex]
     
     P --> F
     S --> Q
+    S --> SAB
     R --> Q
+    R --> SAB
     JS --> S
     JS --> R
 ```
@@ -45,10 +47,9 @@ Open each file and update the `TODO` items:
 
 | File                    | What to change                         |
 | ----------------------- | -------------------------------------- |
-| `vpn-services.yaml`     | `WIREGUARD_PRIVATE_KEY`, torrents path |
+| `vpn-services.yaml`     | `WIREGUARD_PRIVATE_KEY`, torrents/usenet paths |
 | `media-automation.yaml` | Data/media paths                       |
 | `media-streaming.yaml`  | Media path                             |
-| `plex.container`        | Media path, optional PLEX_CLAIM        |
 
 Common values to customize:
 - `PUID` / `PGID` – Run `id -u` and `id -g` to get your user's values
@@ -61,13 +62,12 @@ Common values to customize:
 systemctl --user daemon-reload
 
 # Verify Quadlet generated the units correctly
-systemctl --user list-unit-files | grep -E "(vpn|media|flare|plex)"
+systemctl --user list-unit-files | grep -E "(vpn|media|flare)"
 
 systemctl --user start vpn-services
 systemctl --user start media-automation
 systemctl --user start media-streaming
 systemctl --user start flaresolverr
-# Optional: systemctl --user start plex
 ```
 
 ### 4. Enable autostart (optional)
@@ -81,6 +81,7 @@ systemctl --user enable vpn-services media-automation media-streaming flaresolve
 | Service      | URL                    |
 | ------------ | ---------------------- |
 | qBittorrent  | http://localhost:8090  |
+| SABnzbd      | http://localhost:8080  |
 | Prowlarr     | http://localhost:9696  |
 | Sonarr       | http://localhost:8989  |
 | Radarr       | http://localhost:7878  |
@@ -88,7 +89,6 @@ systemctl --user enable vpn-services media-automation media-streaming flaresolve
 | Jellyfin     | http://localhost:8096  |
 | Jellyseerr   | http://localhost:5055  |
 | FlareSolverr | http://localhost:8191  |
-| Plex         | http://localhost:32400 |
 
 ## Configuring Service Connections
 
@@ -98,6 +98,7 @@ Use pod hostnames for inter-service communication:
 | --------------------------- | ------------------ | ---- |
 | Prowlarr → FlareSolverr     | `flaresolverr`     | 8191 |
 | Sonarr/Radarr → qBittorrent | `vpn-services`     | 8090 |
+| Sonarr/Radarr → SABnzbd     | `vpn-services`     | 8080 |
 | Sonarr/Radarr → Prowlarr    | `vpn-services`     | 9696 |
 | Jellyseerr → Sonarr         | `media-automation` | 8989 |
 | Jellyseerr → Radarr         | `media-automation` | 7878 |
@@ -157,8 +158,7 @@ And in `media-streaming.yaml`, uncomment the `securityContext` block.
 | File                         | Purpose                      |
 | ---------------------------- | ---------------------------- |
 | `home-stream.network`        | Shared network for DNS       |
-| `vpn-services.yaml/kube`     | VPN + qbittorrent + prowlarr |
+| `vpn-services.yaml/kube`     | VPN + qbit + sab + prowlarr  |
 | `media-automation.yaml/kube` | sonarr + radarr + bazarr     |
 | `media-streaming.yaml/kube`  | jellyfin + jellyseerr        |
 | `flaresolverr.container`     | Cloudflare bypass            |
-| `plex.container`             | Plex (host network)          |
