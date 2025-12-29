@@ -220,8 +220,8 @@ services:
       # - 1900:1900/udp
       # Uncomment for hardware transcoding:
       # Intel QuickSync:
-      # devices:
-      #   - /dev/dri:/dev/dri
+      devices:
+        - /dev/dri:/dev/dri
       # NVIDIA (requires nvidia-container-toolkit):
       # runtime: nvidia
       # deploy:
