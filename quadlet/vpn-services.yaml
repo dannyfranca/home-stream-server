@@ -69,7 +69,7 @@ spec:
     # SABnzbd - Usenet Downloader (uses gluetun's network)
     # =========================================================================
     - name: sabnzbd
-      image: lscr.io/linuxserver/sabnzbd:latest
+      image: lscr.io/linuxserver/sabnzbd:4.5.5-ls239
       env:
         - name: PUID
           value: "1000"

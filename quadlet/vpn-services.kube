@@ -10,6 +10,7 @@ Network=home-stream.network
 # Note: TUN device access is handled by privileged: true in the YAML
 # Port exposure
 PublishPort=8090:8090
+PublishPort=8080:8080
 PublishPort=9696:9696
 
 [Service]
