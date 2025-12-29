@@ -30,7 +30,7 @@ spec:
         - name: WIREGUARD_PRIVATE_KEY
           value: "YOUR_WIREGUARD_PRIVATE_KEY_HERE"
         - name: SERVER_COUNTRIES
-          value: "Netherlands"
+          value: "Romania"
         - name: TZ
           value: "Europe/London"
         - name: DNS_KEEP_NAMESERVER
