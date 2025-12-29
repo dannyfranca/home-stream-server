@@ -20,11 +20,14 @@ A complete, production-ready stack for home media streaming with automated downl
 | [SABnzbd](http://localhost:8080)      | 8080  | Usenet downloader (VPN protected)  |
 | [Prowlarr](http://localhost:9696)     | 9696  | Indexer management (VPN protected) |
 | [FlareSolverr](http://localhost:8191) | 8191  | Cloudflare bypass for indexers     |
+| Tor Proxy                             | 9050* | SOCKS5 proxy for .onion indexers   |
 | [Sonarr](http://localhost:8989)       | 8989  | TV show automation                 |
 | [Radarr](http://localhost:7878)       | 7878  | Movie automation                   |
 | [Bazarr](http://localhost:6767)       | 6767  | Subtitle management                |
 | [Jellyfin](http://localhost:8096)     | 8096  | Media streaming server (free)      |
 | [Jellyseerr](http://localhost:5055)   | 5055  | Request management                 |
+
+> *Tor Proxy is internal-only (port 9050 not exposed to host)
 
 ---
 
@@ -198,16 +201,17 @@ After your containers are running, configure each service using these instructio
 
 > ⚠️ **Important**: Hostnames differ between Docker Compose and Quadlet!
 
-| Connection         | Docker Compose      | Quadlet                 |
-| ------------------ | ------------------- | ----------------------- |
-| **→ qBittorrent**  | `gluetun:8090`      | `vpn-services:8090`     |
-| **→ SABnzbd**      | `gluetun:8080`      | `vpn-services:8080`     |
-| **→ Prowlarr**     | `gluetun:9696`      | `vpn-services:9696`     |
-| **→ Sonarr**       | `sonarr:8989`       | `media-automation:8989` |
-| **→ Radarr**       | `radarr:7878`       | `media-automation:7878` |
-| **→ Bazarr**       | `bazarr:6767`       | `media-automation:6767` |
-| **→ Jellyfin**     | `jellyfin:8096`     | `media-streaming:8096`  |
-| **→ FlareSolverr** | `flaresolverr:8191` | `flaresolverr:8191`     |
+| Connection         | Docker Compose      | Quadlet                  |
+| ------------------ | ------------------- | ------------------------ |
+| **→ qBittorrent**  | `gluetun:8090`      | `vpn-services:8090`      |
+| **→ SABnzbd**      | `gluetun:8080`      | `vpn-services:8080`      |
+| **→ Prowlarr**     | `gluetun:9696`      | `vpn-services:9696`      |
+| **→ Sonarr**       | `sonarr:8989`       | `media-automation:8989`  |
+| **→ Radarr**       | `radarr:7878`       | `media-automation:7878`  |
+| **→ Bazarr**       | `bazarr:6767`       | `media-automation:6767`  |
+| **→ Jellyfin**     | `jellyfin:8096`     | `media-streaming:8096`   |
+| **→ FlareSolverr** | `flaresolverr:8191` | `flaresolverr:8191`      |
+| **→ Tor Proxy**    | `tor-proxy:9050`    | `systemd-tor-proxy:9050` |
 
 > 💡 **Docker Compose Note**: qBittorrent, SABnzbd, and Prowlarr share Gluetun's network, so use `gluetun` as the hostname, not their container names.
 
@@ -256,12 +260,37 @@ After your containers are running, configure each service using these instructio
 
 ### Recommended Indexers
 
-| Indexer            | Type   | Best For                     | FlareSolverr |
-| ------------------ | ------ | ---------------------------- | ------------ |
-| **nzbGeek** ⭐      | Usenet | TV, Movies, High retention   | No           |
-| **1337x**          | Torrent| TV Shows, Movies, General    | Yes          |
-| **TorrentGalaxy**  | Torrent| Movies (incl. 4K), TV, Games | Sometimes    |
-| **EZTV**           | Torrent| TV Shows                     | No           |
+| Indexer             | Type    | Best For                     | Proxy Needed    |
+| ------------------- | ------- | ---------------------------- | --------------- |
+| **nzbGeek** ⭐       | Usenet  | TV, Movies, High retention   | No              |
+| **1337x (Onion)** ⭐ | Torrent | TV Shows, Movies, General    | Tor (see below) |
+| **1337x**           | Torrent | TV Shows, Movies, General    | FlareSolverr    |
+| **TorrentGalaxy**   | Torrent | Movies (incl. 4K), TV, Games | Sometimes       |
+| **EZTV**            | Torrent | TV Shows                     | No              |
+
+### 🧅 Using 1337x via Tor (Recommended)
+
+This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare entirely by using the official `.onion` address via Tor. This is more reliable than FlareSolverr.
+
+**Setup Steps:**
+
+1. **Configure Tor Proxy in Prowlarr:**
+   - Go to **Settings** → **Indexers** → **Indexer Proxies**
+   - Click **+** → **SOCKS5**
+   - **Name**: `Tor`
+   - **Host**: `tor-proxy` (Docker Compose) or `systemd-tor-proxy` (Quadlet)
+   - **Port**: `9050`
+   - **Tag**: `tor`
+   - Click **Test** then **Save**
+
+2. **Add the 1337x Onion Indexer:**
+   - Go to **Indexers** → **Add Indexer**
+   - Search for **1337x (Onion)** (custom definition)
+   - Configure settings (magnet links recommended)
+   - **Important**: Add the `tor` tag to route through Tor
+   - Click **Test** then **Save**
+
+> ⚠️ **Note**: The onion site is in beta with some limitations (no registration, limited login for regular users). Search functionality works without login.
 
 ---
 
@@ -470,6 +499,7 @@ Ensure Sonarr/Radarr paths match:
 home-stream-server/
 ├── docker-compose.yml      # Docker/Podman Compose config
 ├── quadlet/                # Podman Quadlet files (alternative)
+├── prowlarr-definitions/   # Custom indexers (1337x-onion, etc.)
 ├── .env                    # Environment config (git-ignored)
 └── .env.example            # Template for .env
 

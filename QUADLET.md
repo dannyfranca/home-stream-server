@@ -22,8 +22,10 @@ graph LR
         JS[jellyseerr]
     end
     F[flaresolverr]
+    T[tor-proxy]
     
     P --> F
+    P --> T
     S --> Q
     S --> SAB
     R --> Q
@@ -39,17 +41,18 @@ graph LR
 ```bash
 mkdir -p ~/.config/containers/systemd
 cp quadlet/* ~/.config/containers/systemd/
+cp -r prowlarr-definitions ~/.config/containers/systemd/
 ```
 
 ### 2. Edit configuration
 
 Open each file and update the `TODO` items:
 
-| File                    | What to change                         |
-| ----------------------- | -------------------------------------- |
+| File                    | What to change                                 |
+| ----------------------- | ---------------------------------------------- |
 | `vpn-services.yaml`     | `WIREGUARD_PRIVATE_KEY`, torrents/usenet paths |
-| `media-automation.yaml` | Data/media paths                       |
-| `media-streaming.yaml`  | Media path                             |
+| `media-automation.yaml` | Data/media paths                               |
+| `media-streaming.yaml`  | Media path                                     |
 
 Common values to customize:
 - `PUID` / `PGID` – Run `id -u` and `id -g` to get your user's values
@@ -68,40 +71,42 @@ systemctl --user start vpn-services
 systemctl --user start media-automation
 systemctl --user start media-streaming
 systemctl --user start flaresolverr
+systemctl --user start tor-proxy
 ```
 
 ### 4. Enable autostart (optional)
 
 ```bash
-systemctl --user enable vpn-services media-automation media-streaming flaresolverr
+systemctl --user enable vpn-services media-automation media-streaming flaresolverr tor-proxy
 ```
 
 ## Service URLs
 
-| Service      | URL                    |
-| ------------ | ---------------------- |
-| qBittorrent  | http://localhost:8090  |
-| SABnzbd      | http://localhost:8080  |
-| Prowlarr     | http://localhost:9696  |
-| Sonarr       | http://localhost:8989  |
-| Radarr       | http://localhost:7878  |
-| Bazarr       | http://localhost:6767  |
-| Jellyfin     | http://localhost:8096  |
-| Jellyseerr   | http://localhost:5055  |
-| FlareSolverr | http://localhost:8191  |
+| Service      | URL                   |
+| ------------ | --------------------- |
+| qBittorrent  | http://localhost:8090 |
+| SABnzbd      | http://localhost:8080 |
+| Prowlarr     | http://localhost:9696 |
+| Sonarr       | http://localhost:8989 |
+| Radarr       | http://localhost:7878 |
+| Bazarr       | http://localhost:6767 |
+| Jellyfin     | http://localhost:8096 |
+| Jellyseerr   | http://localhost:5055 |
+| FlareSolverr | http://localhost:8191 |
 
 ## Configuring Service Connections
 
 Use pod hostnames for inter-service communication:
 
-| From → To                   | Host               | Port |
-| --------------------------- | ------------------ | ---- |
-| Prowlarr → FlareSolverr     | `flaresolverr`     | 8191 |
-| Sonarr/Radarr → qBittorrent | `vpn-services`     | 8090 |
-| Sonarr/Radarr → SABnzbd     | `vpn-services`     | 8080 |
-| Sonarr/Radarr → Prowlarr    | `vpn-services`     | 9696 |
-| Jellyseerr → Sonarr         | `media-automation` | 8989 |
-| Jellyseerr → Radarr         | `media-automation` | 7878 |
+| From → To                   | Host                | Port |
+| --------------------------- | ------------------- | ---- |
+| Prowlarr → FlareSolverr     | `flaresolverr`      | 8191 |
+| Prowlarr → Tor Proxy        | `systemd-tor-proxy` | 9050 |
+| Sonarr/Radarr → qBittorrent | `vpn-services`      | 8090 |
+| Sonarr/Radarr → SABnzbd     | `vpn-services`      | 8080 |
+| Sonarr/Radarr → Prowlarr    | `vpn-services`      | 9696 |
+| Jellyseerr → Sonarr         | `media-automation`  | 8989 |
+| Jellyseerr → Radarr         | `media-automation`  | 7878 |
 
 ## Managing Services
 
@@ -155,10 +160,11 @@ And in `media-streaming.yaml`, uncomment the `securityContext` block.
 
 ## Files Reference
 
-| File                         | Purpose                      |
-| ---------------------------- | ---------------------------- |
-| `home-stream.network`        | Shared network for DNS       |
-| `vpn-services.yaml/kube`     | VPN + qbit + sab + prowlarr  |
-| `media-automation.yaml/kube` | sonarr + radarr + bazarr     |
-| `media-streaming.yaml/kube`  | jellyfin + jellyseerr        |
-| `flaresolverr.container`     | Cloudflare bypass            |
+| File                         | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `home-stream.network`        | Shared network for DNS      |
+| `vpn-services.yaml/kube`     | VPN + qbit + sab + prowlarr |
+| `media-automation.yaml/kube` | sonarr + radarr + bazarr    |
+| `media-streaming.yaml/kube`  | jellyfin + jellyseerr       |
+| `flaresolverr.container`     | Cloudflare bypass           |
+| `tor-proxy.container`        | Tor SOCKS5 for .onion sites |
