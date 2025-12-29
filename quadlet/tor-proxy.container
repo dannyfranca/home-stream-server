@@ -1,0 +1,23 @@
+[Unit]
+Description=Tor SOCKS5 Proxy - For accessing .onion indexers
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/peterdavehello/tor-socks-proxy:latest
+ContainerName=tor-proxy
+
+Network=home-stream.network
+
+# Health check - verify Tor is working
+HealthCmd=nc -z localhost 9050
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

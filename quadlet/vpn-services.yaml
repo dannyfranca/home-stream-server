@@ -98,6 +98,10 @@ spec:
       volumeMounts:
         - name: prowlarr-config
           mountPath: /config
+        # Custom indexer definitions (1337x-onion, etc.)
+        - name: prowlarr-definitions
+          mountPath: /config/Definitions/Custom
+          readOnly: true
 
   volumes:
     - name: gluetun-config
@@ -121,4 +125,9 @@ spec:
     - name: usenet
       hostPath:
         path: /var/home/YOUR_USER/media/usenet
+        type: Directory
+    # Custom indexer definitions - copied alongside quadlet files
+    - name: prowlarr-definitions
+      hostPath:
+        path: /var/home/YOUR_USER/.config/containers/systemd/prowlarr-definitions
         type: Directory
