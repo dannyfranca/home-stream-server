@@ -127,6 +127,8 @@ services:
       - TZ=${TZ}
     volumes:
       - prowlarr_config:/config
+      # Custom indexer definitions (e.g., 1337x-onion for Tor access)
+      - ./prowlarr-definitions:/config/Definitions/Custom:ro
     restart: unless-stopped
 
   # ===========================================================================
@@ -144,8 +146,17 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
-  # TV Show Automation
+  # Tor SOCKS5 Proxy - For accessing .onion indexers (1337x onion, etc.)
   # ===========================================================================
+  tor-proxy:
+    image: docker.io/peterdavehello/tor-socks-proxy:latest
+    container_name: tor-proxy
+    restart: unless-stopped
+    # No ports exposed - only accessible from within the Docker network
+
+    # ===========================================================================
+    # TV Show Automation
+    # ===========================================================================
   sonarr:
     image: lscr.io/linuxserver/sonarr:4.0.16
     container_name: sonarr
