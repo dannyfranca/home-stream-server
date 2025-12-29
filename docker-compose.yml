@@ -21,7 +21,6 @@
 #       Media/torrents use bind mounts for easy access from the host.
 # =============================================================================
 
-
 services:
   # ===========================================================================
   # VPN Client - All torrent traffic routes through this container
@@ -67,7 +66,7 @@ services:
       - "flaresolverr:host-gateway"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://ipinfo.io"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://ipinfo.io" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -220,8 +219,8 @@ services:
       # - 1900:1900/udp
       # Uncomment for hardware transcoding:
       # Intel QuickSync:
-      devices:
-        - /dev/dri:/dev/dri
+    devices:
+      - /dev/dri:/dev/dri
       # NVIDIA (requires nvidia-container-toolkit):
       # runtime: nvidia
       # deploy:
