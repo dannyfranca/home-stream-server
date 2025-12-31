@@ -39,7 +39,7 @@ A complete, production-ready stack for home media streaming with automated downl
   - [Podman Quadlet](#option-b-podman-quadlet-setup)
 - [Service Configuration](#part-3-service-configuration)
   - [qBittorrent](#31-qbittorrent-httplocalhost8090)
-    - [Share Ratio Limiting & Auto-Removal](#-share-ratio-limiting--auto-removal-recommended)
+    - [Seeding Limits & Auto-Removal](#-share-ratio-limiting--auto-removal-recommended)
     - [Queue & Connection Limits](#-queue--connection-limits-recommended)
   - [SABnzbd](#32-sabnzbd-httplocalhost8080)
   - [Prowlarr](#33-prowlarr-httplocalhost9696)
@@ -300,9 +300,13 @@ After your containers are running, configure each service using these instructio
 
 ## 3.1 qBittorrent (http://localhost:8090)
 
-1. Get the temporary password from logs:
+1. Get the temporary password:
    ```bash
-   docker logs qbittorrent  # or: podman logs qbittorrent
+   make password
+   
+   # Or check logs manually:
+   # Docker: docker logs qbittorrent
+   # Quadlet: journalctl --user -u vpn-services | grep password
    ```
 2. Login with `admin` and the password from logs
 3. Go to **Tools** → **Options** → **Downloads**
@@ -310,24 +314,24 @@ After your containers are running, configure each service using these instructio
 4. Go to **Options** → **Web UI**
    - Change the default password
 
-### 🔄 Share Ratio Limiting & Auto-Removal (Recommended)
+### 🔄 Seeding Limits & Auto-Removal (Recommended)
 
 To prevent endless torrents accumulating in your queue, configure automatic removal after seeding:
 
 1. Go to **Tools** → **Options** → **BitTorrent**
-2. Scroll to **Share Ratio Limiting** section
+2. Scroll to **Seeding Limits** section
 3. Configure these settings:
 
-| Setting                                | Recommended Value      | Notes                              |
-| -------------------------------------- | ---------------------- | ---------------------------------- |
-| **When seeding ratio reaches**         | ☑️ `1.0`                | Upload as much as you downloaded   |
-| **When seeding time reaches**          | ☑️ `10080` min (7 days) | Maximum seeding duration           |
-| **When inactive seeding time reaches** | ☑️ `1440` min (1 day)   | Stop if no upload activity for 24h |
-| **Then**                               | `Remove torrent`       | Removes entry, keeps files         |
+| Setting                                | Recommended Value      | Notes                                 |
+| -------------------------------------- | ---------------------- | ------------------------------------- |
+| **When seeding ratio reaches**         | ☑️ `1.0`                | Upload as much as you downloaded      |
+| **When seeding time reaches**          | ☑️ `10080` min (7 days) | Maximum seeding duration              |
+| **When inactive seeding time reaches** | ☑️ `1440` min (1 day)   | Stop if no upload activity for 24h    |
+| **Then**                               | `Pause torrent`        | Pauses seeding, allows *Arr to remove |
 
-> 💡 **How it works**: Torrents will be removed when reaching **either** the ratio limit **or** the time limit (whichever comes first). "Seeding time" only counts active upload time, not inactive periods.
+> 💡 **How it works**: Torrents will be **paused** when reaching the ratio/time limit. Sonarr/Radarr will detect this paused state, import the file (if not done already), and then **automatically remove** the torrent and its files from qBittorrent.
 
-> ⚠️ **Important**: Choose `Remove torrent` (not `Remove torrent and files`) since Sonarr/Radarr will have already imported the files to your media library via hardlinks.
+> ⚠️ **Important**: Select **Pause torrent**. Do NOT select "Remove torrent" here. If qBittorrent removes it first, Sonarr/Radarr may lose track of it before import, resulting in errors or duplicate files.
 
 ### ⚡ Queue & Connection Limits (Recommended)
 
@@ -430,7 +434,7 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 4. **Enable Completed Download Handling** (in each download client's advanced settings):
    - ☑️ **Remove** - Removes torrent from qBittorrent after import
    
-> 💡 **Note**: Sonarr will only remove torrents after they've stopped seeding (based on qBittorrent's share ratio limits). This works with hardlinks - your media files remain in the library.
+> 💡 **Note**: Sonarr will only remove torrents after they have **finished seeding** (i.e., they are in a "Paused" state in qBittorrent). This ensures you meet your seeding goals before the file is deleted from the download folder. Your media library file remains safe.
 
 ---
 
@@ -477,7 +481,11 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 1. Sign in with your Jellyfin credentials
 2. Add Jellyfin server: Use Jellyfin hostname from table
 3. Add Radarr: Use Radarr hostname from table + API key
+   - ☑️ **Enable Delete**: Allows deleting movies from disk via Jellyseerr
 4. Add Sonarr: Use Sonarr hostname from table + API key
+   - ☑️ **Enable Delete**: Allows deleting series from disk via Jellyseerr
+
+> 💡 **Tip**: When you want to remove content, doing it from Jellyseerr is the cleanest method. It will remove the request and instruct Sonarr/Radarr to delete the media files.
 
 ---
 
