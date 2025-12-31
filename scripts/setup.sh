@@ -393,13 +393,43 @@ EOF
     printf "\n"
     print_success "Quadlet setup complete!"
     printf "\n"
-    print_info "To start the services:"
-    printf "    make quadlet-start\n"
+    
+    # Offer to start and enable services immediately
+    if confirm "Start services and enable auto-start now?" "y"; then
+        printf "\n"
+        print_info "Starting services..."
+        local services=("vpn-services" "media-automation" "media-streaming" "flaresolverr" "tor-proxy")
+        for svc in "${services[@]}"; do
+            if systemctl --user start "$svc" 2>/dev/null; then
+                print_success "Started: $svc"
+            else
+                print_warning "Failed to start: $svc"
+            fi
+        done
+        
+        printf "\n"
+        print_info "Enabling services for auto-start..."
+        for svc in "${services[@]}"; do
+            if systemctl --user enable "$svc" 2>/dev/null; then
+                print_success "Enabled: $svc"
+            else
+                print_warning "Failed to enable: $svc"
+            fi
+        done
+        
+        printf "\n"
+        print_success "All services started and enabled!"
+    else
+        printf "\n"
+        print_info "To start the services later:"
+        printf "    make quadlet-start\n"
+        printf "\n"
+        print_info "To enable auto-start on boot:"
+        printf "    make quadlet-enable\n"
+    fi
+    
     printf "\n"
-    print_info "To enable auto-start on boot:"
-    printf "    make quadlet-enable\n"
-    printf "\n"
-    print_info "Other useful commands:"
+    print_info "Useful commands:"
     printf "    make quadlet-status   # Check service status\n"
     printf "    make quadlet-logs     # View logs\n"
     printf "    make quadlet-stop     # Stop services\n"
