@@ -275,10 +275,26 @@ EOF
     
     print_success "Docker Compose setup complete!"
     printf "\n"
-    print_info "To start the stack:"
-    printf "    make compose-start\n"
+    
+    # Offer to start services immediately
+    if confirm "Start services now?" "y"; then
+        printf "\n"
+        print_info "Starting Docker Compose stack..."
+        if check_command podman; then
+            podman compose up -d && print_success "Services started!" || print_error "Failed to start services"
+        elif check_command docker; then
+            docker compose up -d && print_success "Services started!" || print_error "Failed to start services"
+        else
+            print_error "No container runtime found (docker or podman)"
+        fi
+    else
+        printf "\n"
+        print_info "To start the stack later:"
+        printf "    make compose-start\n"
+    fi
+    
     printf "\n"
-    print_info "Other useful commands:"
+    print_info "Useful commands:"
     printf "    make compose-status   # Check service status\n"
     printf "    make compose-logs     # View logs\n"
     printf "    make compose-stop     # Stop services\n"
