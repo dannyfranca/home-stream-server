@@ -9,7 +9,7 @@ ContainerName=flaresolverr
 
 Environment=LOG_LEVEL=info
 Environment=LOG_HTML=false
-Environment=TZ=Europe/London
+Environment=TZ={{TZ}}
 
 Network=home-stream.network
 PublishPort=8191:8191

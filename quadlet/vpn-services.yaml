@@ -1,8 +1,11 @@
 # VPN Services Pod
-# Containers: gluetun (VPN), qbittorrent, prowlarr
+# Containers: gluetun (VPN), qbittorrent, sabnzbd, prowlarr
 # All containers share gluetun's network namespace for VPN routing
 #
-# CONFIGURATION: Edit the values below before deploying
+# SECURITY: WireGuard key is in a SEPARATE file (wireguard-secret.yaml)
+# that is created during setup and never committed to git.
+#
+# Template file - edit quadlet/ source files for changes
 apiVersion: v1
 kind: Pod
 metadata:
@@ -26,13 +29,15 @@ spec:
           value: "nordvpn"
         - name: VPN_TYPE
           value: "wireguard"
-        # TODO: Set your NordVPN WireGuard private key
         - name: WIREGUARD_PRIVATE_KEY
-          value: "YOUR_WIREGUARD_PRIVATE_KEY_HERE"
+          valueFrom:
+            secretKeyRef:
+              name: wireguard-key
+              key: key
         - name: SERVER_COUNTRIES
-          value: "Romania"
+          value: "{{SERVER_COUNTRIES}}"
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
         - name: DNS_KEEP_NAMESERVER
           value: "on"
         - name: FIREWALL_VPN_INPUT_PORTS
@@ -52,11 +57,11 @@ spec:
       image: lscr.io/linuxserver/qbittorrent:5.1.4
       env:
         - name: PUID
-          value: "1000"
+          value: "{{PUID}}"
         - name: PGID
-          value: "1000"
+          value: "{{PGID}}"
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
         - name: WEBUI_PORT
           value: "8090"
       volumeMounts:
@@ -72,11 +77,11 @@ spec:
       image: lscr.io/linuxserver/sabnzbd:4.5.5
       env:
         - name: PUID
-          value: "1000"
+          value: "{{PUID}}"
         - name: PGID
-          value: "1000"
+          value: "{{PGID}}"
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
       volumeMounts:
         - name: sabnzbd-config
           mountPath: /config
@@ -90,11 +95,11 @@ spec:
       image: lscr.io/linuxserver/prowlarr:2.3.0
       env:
         - name: PUID
-          value: "1000"
+          value: "{{PUID}}"
         - name: PGID
-          value: "1000"
+          value: "{{PGID}}"
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
       volumeMounts:
         - name: prowlarr-config
           mountPath: /config
@@ -116,18 +121,16 @@ spec:
     - name: prowlarr-config
       persistentVolumeClaim:
         claimName: prowlarr-config
-    # TODO: Update this path to your torrents directory
     - name: torrents
       hostPath:
-        path: /var/home/YOUR_USER/media/torrents
+        path: {{DATA_PATH}}/torrents
         type: Directory
-    # TODO: Update this path to your usenet directory
     - name: usenet
       hostPath:
-        path: /var/home/YOUR_USER/media/usenet
+        path: {{DATA_PATH}}/usenet
         type: Directory
     # Custom indexer definitions - copied alongside quadlet files
     - name: prowlarr-definitions
       hostPath:
-        path: /var/home/YOUR_USER/.config/containers/systemd/prowlarr-definitions
+        path: {{PROWLARR_DEFINITIONS_PATH}}
         type: Directory

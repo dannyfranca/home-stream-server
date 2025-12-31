@@ -2,7 +2,7 @@
 # Containers: jellyfin, jellyseerr
 # Jellyseerr connects to Jellyfin via localhost
 #
-# CONFIGURATION: Edit the values below before deploying
+# Auto-generated from template - edit quadlet/templates/ for changes
 apiVersion: v1
 kind: Pod
 metadata:
@@ -18,11 +18,11 @@ spec:
       image: lscr.io/linuxserver/jellyfin:10.11.4
       env:
         - name: PUID
-          value: "1000"
+          value: "{{PUID}}"
         - name: PGID
-          value: "1000"
+          value: "{{PGID}}"
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
       ports:
         - containerPort: 8096
           hostPort: 8096
@@ -42,7 +42,7 @@ spec:
       image: docker.io/fallenbagel/jellyseerr:2.7.3
       env:
         - name: TZ
-          value: "Europe/London"
+          value: "{{TZ}}"
         - name: LOG_LEVEL
           value: "info"
       ports:
@@ -59,8 +59,7 @@ spec:
     - name: jellyseerr-config
       persistentVolumeClaim:
         claimName: jellyseerr-config
-    # TODO: Update this path to your media directory
     - name: media
       hostPath:
-        path: /var/home/YOUR_USER/media/media
+        path: {{DATA_PATH}}/media
         type: Directory

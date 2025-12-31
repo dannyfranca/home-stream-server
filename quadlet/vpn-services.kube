@@ -1,9 +1,12 @@
 [Unit]
-Description=VPN Services Pod (gluetun + qbittorrent + prowlarr)
+Description=VPN Services Pod (gluetun + qbittorrent + sabnzbd + prowlarr)
 After=network-online.target
 Wants=network-online.target
 
 [Kube]
+# Secret file is created during setup (contains WireGuard key)
+Yaml=wireguard-secret.yaml
+# Main pod definition
 Yaml=vpn-services.yaml
 Network=home-stream.network
 AutoUpdate=registry
