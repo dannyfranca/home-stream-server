@@ -406,17 +406,16 @@ EOF
         /usr/libexec/podman/quadlet --dryrun --user 2>&1 | grep -i error || true
     fi
     
-    printf "\n"
+    printf "\\n"
     print_success "Quadlet setup complete!"
-    printf "\n"
+    printf "\\n"
     
-    # Offer to start and enable services immediately
-    if confirm "Start services and enable auto-start now?" "y"; then
-        printf "\n"
+    # Offer to start services immediately
+    if confirm "Start services now?" "y"; then
+        printf "\\n"
         print_info "Starting services..."
         local services=("vpn-services" "media-automation" "media-streaming" "flaresolverr" "tor-proxy")
         local start_errors=0
-        local enable_errors=0
         local error_output
         
         for svc in "${services[@]}"; do
@@ -424,37 +423,26 @@ EOF
                 print_success "Started: $svc"
             else
                 print_warning "Failed to start: $svc"
-                printf "         %s\n" "$error_output"
+                printf "         %s\\n" "$error_output"
                 ((start_errors++))
             fi
         done
         
-        printf "\n"
-        print_info "Enabling services for auto-start..."
-        for svc in "${services[@]}"; do
-            if error_output=$(systemctl --user enable "$svc" 2>&1); then
-                print_success "Enabled: $svc"
-            else
-                print_warning "Failed to enable: $svc"
-                printf "         %s\n" "$error_output"
-                ((enable_errors++))
-            fi
-        done
-        
-        printf "\n"
-        if [[ $start_errors -eq 0 && $enable_errors -eq 0 ]]; then
-            print_success "All services started and enabled!"
+        printf "\\n"
+        if [[ $start_errors -eq 0 ]]; then
+            print_success "All services started!"
+            print_info "Auto-start is already configured via Quadlet definitions."
         else
-            print_warning "Some operations failed - check errors above"
+            print_warning "Some services failed to start - check errors above"
             print_info "You may need to run: make quadlet-reload"
         fi
     else
-        printf "\n"
+        printf "\\n"
         print_info "To start the services later:"
-        printf "    make quadlet-start\n"
-        printf "\n"
-        print_info "To enable auto-start on boot:"
-        printf "    make quadlet-enable\n"
+        printf "    make quadlet-start\\n"
+        printf "\\n"
+        print_info "Auto-start on boot is pre-configured."
+        print_info "Ensure user lingering is enabled (already done during setup)."
     fi
     
     printf "\n"

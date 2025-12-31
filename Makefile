@@ -244,19 +244,15 @@ quadlet-enable:
 	@printf "$(CYAN)Enabling lingering for boot-time startup...$(NC)\n"
 	@sudo loginctl enable-linger $(USER) || printf "$(YELLOW)Failed - you may need to run: sudo loginctl enable-linger $(USER)$(NC)\n"
 	@printf "\n"
-	@printf "$(CYAN)Enabling services...$(NC)\n"
-	@for svc in $(QUADLET_SERVICES); do \
-		systemctl --user enable $$svc || true; \
-	done
-	@printf "$(GREEN)✓ Services enabled for boot$(NC)\n"
+	@printf "$(CYAN)Services are auto-enabled by Quadlet definitions.$(NC)\n"
+	@printf "$(GREEN)✓ Boot startup configured$(NC)\n"
 
 ## quadlet-disable: Disable Quadlet services at boot
 quadlet-disable:
-	@printf "$(CYAN)Disabling services...$(NC)\n"
-	@for svc in $(QUADLET_SERVICES); do \
-		systemctl --user disable $$svc || true; \
-	done
-	@printf "$(GREEN)✓ Services disabled$(NC)\n"
+	@printf "$(CYAN)To disable Quadlet services, you must remove the files from:$(NC)\n"
+	@printf "  $(SYSTEMD_DIR)/\n"
+	@printf "\n"
+	@printf "Run 'make clean' to remove all data and configurations appropriately.\n"
 
 # =============================================================================
 # Utility Targets
