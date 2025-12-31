@@ -415,26 +415,39 @@ EOF
         printf "\n"
         print_info "Starting services..."
         local services=("vpn-services" "media-automation" "media-streaming" "flaresolverr" "tor-proxy")
+        local start_errors=0
+        local enable_errors=0
+        local error_output
+        
         for svc in "${services[@]}"; do
-            if systemctl --user start "$svc" 2>/dev/null; then
+            if error_output=$(systemctl --user start "$svc" 2>&1); then
                 print_success "Started: $svc"
             else
                 print_warning "Failed to start: $svc"
+                printf "         %s\n" "$error_output"
+                ((start_errors++))
             fi
         done
         
         printf "\n"
         print_info "Enabling services for auto-start..."
         for svc in "${services[@]}"; do
-            if systemctl --user enable "$svc" 2>/dev/null; then
+            if error_output=$(systemctl --user enable "$svc" 2>&1); then
                 print_success "Enabled: $svc"
             else
                 print_warning "Failed to enable: $svc"
+                printf "         %s\n" "$error_output"
+                ((enable_errors++))
             fi
         done
         
         printf "\n"
-        print_success "All services started and enabled!"
+        if [[ $start_errors -eq 0 && $enable_errors -eq 0 ]]; then
+            print_success "All services started and enabled!"
+        else
+            print_warning "Some operations failed - check errors above"
+            print_info "You may need to run: make quadlet-reload"
+        fi
     else
         printf "\n"
         print_info "To start the services later:"
