@@ -48,38 +48,38 @@ NC := \033[0m
 
 ## help: Show this help message
 help:
-	@echo ""
-	@echo "$(BOLD)$(CYAN)🎬 Home Stream Server - Make Commands$(NC)"
-	@echo ""
-	@echo "$(BOLD)Setup Commands:$(NC)"
-	@echo "  $(CYAN)make setup$(NC)       Interactive setup wizard (recommended)"
-	@echo "  $(CYAN)make compose$(NC)     Setup Docker Compose only"
-	@echo "  $(CYAN)make quadlet$(NC)     Setup Podman Quadlet only"
-	@echo ""
-	@echo "$(BOLD)Docker Compose Commands:$(NC)"
-	@echo "  $(CYAN)make compose-start$(NC)   Start compose stack"
-	@echo "  $(CYAN)make compose-stop$(NC)    Stop compose stack"
-	@echo "  $(CYAN)make compose-logs$(NC)    View compose logs"
-	@echo "  $(CYAN)make compose-status$(NC)  Show compose status"
-	@echo "  $(CYAN)make compose-update$(NC)  Update compose images"
-	@echo ""
-	@echo "$(BOLD)Quadlet Commands:$(NC)"
-	@echo "  $(CYAN)make quadlet-start$(NC)   Start quadlet services"
-	@echo "  $(CYAN)make quadlet-stop$(NC)    Stop quadlet services"
-	@echo "  $(CYAN)make quadlet-logs$(NC)    View quadlet logs"
-	@echo "  $(CYAN)make quadlet-status$(NC)  Show quadlet status"
-	@echo "  $(CYAN)make quadlet-reload$(NC)  Reload quadlet daemon"
-	@echo "  $(CYAN)make quadlet-enable$(NC)  Enable services at boot"
-	@echo ""
-	@echo "$(BOLD)Utility Commands:$(NC)"
-	@echo "  $(CYAN)make dirs$(NC)            Create data directories"
-	@echo "  $(CYAN)make permissions$(NC)     Fix directory permissions"
-	@echo "  $(CYAN)make validate$(NC)        Validate configuration"
-	@echo "  $(CYAN)make vpn-check$(NC)       Verify VPN is working"
-	@echo "  $(CYAN)make clean$(NC)           Remove all data (DANGEROUS!)"
-	@echo ""
-	@echo "$(BOLD)Detected Runtime:$(NC) $(RUNTIME)"
-	@echo ""
+	@printf "\n"
+	@printf "$(BOLD)$(CYAN)🎬 Home Stream Server - Make Commands$(NC)\n"
+	@printf "\n"
+	@printf "$(BOLD)Setup Commands:$(NC)\n"
+	@printf "  $(CYAN)make setup$(NC)       Interactive setup wizard (recommended)\n"
+	@printf "  $(CYAN)make compose$(NC)     Setup Docker Compose only\n"
+	@printf "  $(CYAN)make quadlet$(NC)     Setup Podman Quadlet only\n"
+	@printf "\n"
+	@printf "$(BOLD)Docker Compose Commands:$(NC)\n"
+	@printf "  $(CYAN)make compose-start$(NC)   Start compose stack\n"
+	@printf "  $(CYAN)make compose-stop$(NC)    Stop compose stack\n"
+	@printf "  $(CYAN)make compose-logs$(NC)    View compose logs\n"
+	@printf "  $(CYAN)make compose-status$(NC)  Show compose status\n"
+	@printf "  $(CYAN)make compose-update$(NC)  Update compose images\n"
+	@printf "\n"
+	@printf "$(BOLD)Quadlet Commands:$(NC)\n"
+	@printf "  $(CYAN)make quadlet-start$(NC)   Start quadlet services\n"
+	@printf "  $(CYAN)make quadlet-stop$(NC)    Stop quadlet services\n"
+	@printf "  $(CYAN)make quadlet-logs$(NC)    View quadlet logs\n"
+	@printf "  $(CYAN)make quadlet-status$(NC)  Show quadlet status\n"
+	@printf "  $(CYAN)make quadlet-reload$(NC)  Reload quadlet daemon\n"
+	@printf "  $(CYAN)make quadlet-enable$(NC)  Enable services at boot\n"
+	@printf "\n"
+	@printf "$(BOLD)Utility Commands:$(NC)\n"
+	@printf "  $(CYAN)make dirs$(NC)            Create data directories\n"
+	@printf "  $(CYAN)make permissions$(NC)     Fix directory permissions\n"
+	@printf "  $(CYAN)make validate$(NC)        Validate configuration\n"
+	@printf "  $(CYAN)make vpn-check$(NC)       Verify VPN is working\n"
+	@printf "  $(CYAN)make clean$(NC)           Remove all data (DANGEROUS!)\n"
+	@printf "\n"
+	@printf "$(BOLD)Detected Runtime:$(NC) $(RUNTIME)\n"
+	@printf "\n"
 
 ## setup: Interactive setup wizard
 setup:
@@ -87,27 +87,27 @@ setup:
 
 ## compose: Setup Docker Compose (non-interactive, requires .env)
 compose: check-env
-	@echo "$(BOLD)$(CYAN)Setting up Docker Compose...$(NC)"
+	@printf "$(BOLD)$(CYAN)Setting up Docker Compose...$(NC)\n"
 	@if [ ! -f .env ]; then \
-		echo "$(RED)Error: .env file not found. Run 'make setup' first.$(NC)"; \
+		printf "$(RED)Error: .env file not found. Run 'make setup' first.$(NC)\n"; \
 		exit 1; \
 	fi
 	@$(MAKE) dirs
-	@echo "$(GREEN)✓ Docker Compose ready!$(NC)"
-	@echo "  Run: $(COMPOSE) up -d"
+	@printf "$(GREEN)✓ Docker Compose ready!$(NC)\n"
+	@printf "  Run: $(COMPOSE) up -d\n"
 
 ## quadlet: Setup Podman Quadlet (non-interactive, requires .env)
 quadlet: check-env
-	@echo "$(BOLD)$(CYAN)Setting up Podman Quadlet...$(NC)"
+	@printf "$(BOLD)$(CYAN)Setting up Podman Quadlet...$(NC)\n"
 	@if [ ! -f .env ]; then \
-		echo "$(RED)Error: .env file not found. Run 'make setup' first.$(NC)"; \
+		printf "$(RED)Error: .env file not found. Run 'make setup' first.$(NC)\n"; \
 		exit 1; \
 	fi
 	@$(MAKE) quadlet-install
 	@$(MAKE) dirs
 	@$(MAKE) quadlet-reload
-	@echo "$(GREEN)✓ Quadlet ready!$(NC)"
-	@echo "  Run: make quadlet-start"
+	@printf "$(GREEN)✓ Quadlet ready!$(NC)\n"
+	@printf "  Run: make quadlet-start\n"
 
 # =============================================================================
 # Docker Compose Targets
@@ -115,12 +115,12 @@ quadlet: check-env
 
 ## compose-start: Start Docker Compose stack
 compose-start:
-	@echo "$(CYAN)Starting compose stack...$(NC)"
+	@printf "$(CYAN)Starting compose stack...$(NC)\n"
 	$(COMPOSE) up -d
 
 ## compose-stop: Stop Docker Compose stack
 compose-stop:
-	@echo "$(CYAN)Stopping compose stack...$(NC)"
+	@printf "$(CYAN)Stopping compose stack...$(NC)\n"
 	$(COMPOSE) down
 
 ## compose-logs: View Docker Compose logs
@@ -133,11 +133,11 @@ compose-status:
 
 ## compose-update: Update Docker Compose images
 compose-update:
-	@echo "$(CYAN)Pulling latest images...$(NC)"
+	@printf "$(CYAN)Pulling latest images...$(NC)\n"
 	$(COMPOSE) pull
-	@echo "$(CYAN)Recreating containers...$(NC)"
+	@printf "$(CYAN)Recreating containers...$(NC)\n"
 	$(COMPOSE) up -d
-	@echo "$(CYAN)Cleaning old images...$(NC)"
+	@printf "$(CYAN)Cleaning old images...$(NC)\n"
 	$(RUNTIME) image prune -f
 
 # =============================================================================
@@ -196,42 +196,42 @@ quadlet-install:
 
 ## quadlet-reload: Reload systemd daemon
 quadlet-reload:
-	@echo "$(CYAN)Reloading systemd...$(NC)"
+	@printf "$(CYAN)Reloading systemd...$(NC)\n"
 	systemctl --user daemon-reload
-	@echo "$(GREEN)✓ Daemon reloaded$(NC)"
-	@echo ""
-	@echo "$(CYAN)Generated units:$(NC)"
+	@printf "$(GREEN)✓ Daemon reloaded$(NC)\n"
+	@printf "\n"
+	@printf "$(CYAN)Generated units:$(NC)\n"
 	@systemctl --user list-unit-files | grep -E "(vpn-services|media-automation|media-streaming|flaresolverr|tor-proxy)" || \
-		echo "$(YELLOW)No units found - check for errors with: /usr/libexec/podman/quadlet --dryrun --user$(NC)"
+		printf "$(YELLOW)No units found - check for errors with: /usr/libexec/podman/quadlet --dryrun --user$(NC)\n"
 
 ## quadlet-start: Start all Quadlet services
 quadlet-start:
-	@echo "$(CYAN)Starting Quadlet services...$(NC)"
+	@printf "$(CYAN)Starting Quadlet services...$(NC)\n"
 	@for svc in $(QUADLET_SERVICES); do \
-		echo "  Starting $$svc..."; \
+		printf "  Starting $$svc...\n"; \
 		systemctl --user start $$svc || true; \
 	done
-	@echo "$(GREEN)✓ Services started$(NC)"
+	@printf "$(GREEN)✓ Services started$(NC)\n"
 
 ## quadlet-stop: Stop all Quadlet services
 quadlet-stop:
-	@echo "$(CYAN)Stopping Quadlet services...$(NC)"
+	@printf "$(CYAN)Stopping Quadlet services...$(NC)\n"
 	@for svc in $(QUADLET_SERVICES); do \
-		echo "  Stopping $$svc..."; \
+		printf "  Stopping $$svc...\n"; \
 		systemctl --user stop $$svc || true; \
 	done
-	@echo "$(GREEN)✓ Services stopped$(NC)"
+	@printf "$(GREEN)✓ Services stopped$(NC)\n"
 
 ## quadlet-status: Show Quadlet service status
 quadlet-status:
-	@echo "$(BOLD)$(CYAN)Quadlet Service Status$(NC)"
-	@echo ""
+	@printf "$(BOLD)$(CYAN)Quadlet Service Status$(NC)\n"
+	@printf "\n"
 	@for svc in $(QUADLET_SERVICES); do \
 		status=$$(systemctl --user is-active $$svc 2>/dev/null || echo "inactive"); \
 		if [ "$$status" = "active" ]; then \
-			echo "  $(GREEN)●$(NC) $$svc: $$status"; \
+			printf "  $(GREEN)●$(NC) $$svc: $$status\n"; \
 		else \
-			echo "  $(RED)○$(NC) $$svc: $$status"; \
+			printf "  $(RED)○$(NC) $$svc: $$status\n"; \
 		fi; \
 	done
 
@@ -241,14 +241,14 @@ quadlet-logs:
 
 ## quadlet-enable: Enable Quadlet services at boot
 quadlet-enable:
-	@echo "$(CYAN)Enabling lingering for boot-time startup...$(NC)"
-	@sudo loginctl enable-linger $(USER) || echo "$(YELLOW)Failed - you may need to run: sudo loginctl enable-linger $(USER)$(NC)"
-	@echo ""
-	@echo "$(CYAN)Enabling services...$(NC)"
+	@printf "$(CYAN)Enabling lingering for boot-time startup...$(NC)\n"
+	@sudo loginctl enable-linger $(USER) || printf "$(YELLOW)Failed - you may need to run: sudo loginctl enable-linger $(USER)$(NC)\n"
+	@printf "\n"
+	@printf "$(CYAN)Enabling services...$(NC)\n"
 	@for svc in $(QUADLET_SERVICES); do \
 		systemctl --user enable $$svc || true; \
 	done
-	@echo "$(GREEN)✓ Services enabled for boot$(NC)"
+	@printf "$(GREEN)✓ Services enabled for boot$(NC)\n"
 
 ## quadlet-disable: Disable Quadlet services at boot
 quadlet-disable:
@@ -265,111 +265,111 @@ quadlet-disable:
 ## check-env: Check if .env file exists
 check-env:
 	@if [ ! -f .env ]; then \
-		echo "$(YELLOW)Warning: .env file not found$(NC)"; \
-		echo "Run 'make setup' for interactive configuration or copy .env.example to .env"; \
+		printf "$(YELLOW)Warning: .env file not found$(NC)\n"; \
+		printf "Run 'make setup' for interactive configuration or copy .env.example to .env\n"; \
 	fi
 
 ## validate: Validate configuration
 validate:
-	@echo "$(BOLD)$(CYAN)Validating Configuration$(NC)"
-	@echo ""
+	@printf "$(BOLD)$(CYAN)Validating Configuration$(NC)\n"
+	@printf "\n"
 	@# Check .env
 	@if [ -f .env ]; then \
-		echo "$(GREEN)✓$(NC) .env file exists"; \
+		printf "$(GREEN)✓$(NC) .env file exists\n"; \
 		if grep -q "WIREGUARD_PRIVATE_KEY=\"\"" .env; then \
-			echo "$(RED)✗$(NC) WIREGUARD_PRIVATE_KEY is empty"; \
+			printf "$(RED)✗$(NC) WIREGUARD_PRIVATE_KEY is empty\n"; \
 		else \
-			echo "$(GREEN)✓$(NC) WIREGUARD_PRIVATE_KEY is set"; \
+			printf "$(GREEN)✓$(NC) WIREGUARD_PRIVATE_KEY is set\n"; \
 		fi; \
 		DATA_PATH=$$(grep DATA_PATH .env | cut -d= -f2); \
 		if [ -d "$$DATA_PATH" ]; then \
-			echo "$(GREEN)✓$(NC) DATA_PATH exists: $$DATA_PATH"; \
+			printf "$(GREEN)✓$(NC) DATA_PATH exists: $$DATA_PATH\n"; \
 		else \
-			echo "$(YELLOW)⚠$(NC) DATA_PATH doesn't exist: $$DATA_PATH"; \
+			printf "$(YELLOW)⚠$(NC) DATA_PATH doesn't exist: $$DATA_PATH\n"; \
 		fi; \
 	else \
-		echo "$(RED)✗$(NC) .env file missing"; \
+		printf "$(RED)✗$(NC) .env file missing\n"; \
 	fi
-	@echo ""
+	@printf "\n"
 	@# Check runtime
 	@if [ "$(RUNTIME)" = "none" ]; then \
-		echo "$(RED)✗$(NC) No container runtime found (docker or podman)"; \
+		printf "$(RED)✗$(NC) No container runtime found (docker or podman)\n"; \
 	else \
-		echo "$(GREEN)✓$(NC) Container runtime: $(RUNTIME)"; \
+		printf "$(GREEN)✓$(NC) Container runtime: $(RUNTIME)\n"; \
 	fi
-	@echo ""
+	@printf "\n"
 	@# Check Quadlet (if using Podman)
 	@if [ -n "$(PODMAN)" ]; then \
 		if [ -f "$(SYSTEMD_DIR)/vpn-services.yaml" ]; then \
-			echo "$(GREEN)✓$(NC) Quadlet files installed"; \
+			printf "$(GREEN)✓$(NC) Quadlet files installed\n"; \
 		else \
-			echo "$(YELLOW)⚠$(NC) Quadlet files not installed (run 'make quadlet')"; \
+			printf "$(YELLOW)⚠$(NC) Quadlet files not installed (run 'make quadlet')\n"; \
 		fi; \
 	fi
 
 ## dirs: Create data directories
 dirs:
-	@echo "$(CYAN)Creating data directories...$(NC)"
+	@printf "$(CYAN)Creating data directories...$(NC)\n"
 	@if [ -f .env ]; then \
 		DATA_PATH=$$(grep DATA_PATH .env | cut -d= -f2 | tr -d '"'); \
 		mkdir -p "$$DATA_PATH/torrents/movies" "$$DATA_PATH/torrents/tv"; \
 		mkdir -p "$$DATA_PATH/usenet/movies" "$$DATA_PATH/usenet/tv" "$$DATA_PATH/usenet/complete" "$$DATA_PATH/usenet/incomplete"; \
 		mkdir -p "$$DATA_PATH/media/movies" "$$DATA_PATH/media/tv"; \
-		echo "$(GREEN)✓$(NC) Created directories in $$DATA_PATH"; \
+		printf "$(GREEN)✓$(NC) Created directories in $$DATA_PATH\n"; \
 	else \
-		echo "$(RED)Error: .env file not found$(NC)"; \
+		printf "$(RED)Error: .env file not found$(NC)\n"; \
 		exit 1; \
 	fi
 
 ## permissions: Fix directory permissions
 permissions:
-	@echo "$(CYAN)Fixing permissions...$(NC)"
+	@printf "$(CYAN)Fixing permissions...$(NC)\n"
 	@if [ -f .env ]; then \
 		DATA_PATH=$$(grep DATA_PATH .env | cut -d= -f2 | tr -d '"'); \
 		PUID=$$(grep PUID .env | cut -d= -f2); \
 		PGID=$$(grep PGID .env | cut -d= -f2); \
 		if command -v podman >/dev/null 2>&1; then \
-			echo "Using podman unshare for rootless permissions..."; \
+			printf "Using podman unshare for rootless permissions...\n"; \
 			podman unshare chown -R "$$PUID:$$PGID" "$$DATA_PATH"; \
 			if command -v chcon >/dev/null 2>&1; then \
-				echo "Setting SELinux context..."; \
+				printf "Setting SELinux context...\n"; \
 				podman unshare chcon -R -t container_file_t "$$DATA_PATH" 2>/dev/null || true; \
 			fi; \
 		else \
 			chown -R "$$PUID:$$PGID" "$$DATA_PATH"; \
 		fi; \
-		echo "$(GREEN)✓$(NC) Permissions fixed"; \
+		printf "$(GREEN)✓$(NC) Permissions fixed\n"; \
 	else \
-		echo "$(RED)Error: .env file not found$(NC)"; \
+		printf "$(RED)Error: .env file not found$(NC)\n"; \
 		exit 1; \
 	fi
 
 ## vpn-check: Verify VPN is working
 vpn-check:
-	@echo "$(CYAN)Checking VPN status...$(NC)"
-	@echo ""
-	@echo "Your IP: $$(curl -s ifconfig.me)"
-	@echo ""
+	@printf "$(CYAN)Checking VPN status...$(NC)\n"
+	@printf "\n"
+	@printf "Your IP: %s\n" "$$(curl -s ifconfig.me)"
+	@printf "\n"
 	@if $(RUNTIME) ps | grep -q gluetun; then \
-		echo "VPN Container IP: $$($(RUNTIME) exec gluetun wget -qO- ifconfig.me 2>/dev/null || $(RUNTIME) exec vpn-services-gluetun wget -qO- ifconfig.me 2>/dev/null || echo 'Failed to get VPN IP')"; \
+		printf "VPN Container IP: %s\n" "$$($(RUNTIME) exec gluetun wget -qO- ifconfig.me 2>/dev/null || $(RUNTIME) exec vpn-services-gluetun wget -qO- ifconfig.me 2>/dev/null || echo 'Failed to get VPN IP')"; \
 	else \
-		echo "$(YELLOW)Gluetun container not running$(NC)"; \
+		printf "$(YELLOW)Gluetun container not running$(NC)\n"; \
 	fi
 
 ## clean: Remove all data (DANGEROUS!)
 clean:
-	@echo "$(RED)$(BOLD)⚠️  WARNING: This will remove all container data!$(NC)"
-	@echo ""
+	@printf "$(RED)$(BOLD)⚠️  WARNING: This will remove all container data!$(NC)\n"
+	@printf "\n"
 	@read -p "Type 'DELETE' to confirm: " confirm; \
 	if [ "$$confirm" = "DELETE" ]; then \
-		echo "$(CYAN)Stopping services...$(NC)"; \
+		printf "$(CYAN)Stopping services...$(NC)\n"; \
 		$(MAKE) compose-stop 2>/dev/null || true; \
 		$(MAKE) quadlet-stop 2>/dev/null || true; \
-		echo "$(CYAN)Removing volumes...$(NC)"; \
+		printf "$(CYAN)Removing volumes...$(NC)\n"; \
 		$(RUNTIME) volume prune -f; \
-		echo "$(GREEN)✓ Cleanup complete$(NC)"; \
+		printf "$(GREEN)✓ Cleanup complete$(NC)\n"; \
 	else \
-		echo "Cancelled."; \
+		printf "Cancelled.\n"; \
 	fi
 
 # Default target
