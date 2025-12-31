@@ -276,8 +276,12 @@ EOF
     print_success "Docker Compose setup complete!"
     printf "\n"
     print_info "To start the stack:"
-    printf "    cd %s\n" "$PROJECT_ROOT"
-    printf "    docker compose up -d   # or: podman compose up -d\n"
+    printf "    make compose-start\n"
+    printf "\n"
+    print_info "Other useful commands:"
+    printf "    make compose-status   # Check service status\n"
+    printf "    make compose-logs     # View logs\n"
+    printf "    make compose-stop     # Stop services\n"
 }
 
 # =============================================================================
@@ -390,14 +394,15 @@ EOF
     print_success "Quadlet setup complete!"
     printf "\n"
     print_info "To start the services:"
-    printf "    systemctl --user start vpn-services\n"
-    printf "    systemctl --user start media-automation\n"
-    printf "    systemctl --user start media-streaming\n"
-    printf "    systemctl --user start flaresolverr\n"
-    printf "    systemctl --user start tor-proxy\n"
+    printf "    make quadlet-start\n"
     printf "\n"
     print_info "To enable auto-start on boot:"
-    printf "    systemctl --user enable vpn-services media-automation media-streaming flaresolverr tor-proxy\n"
+    printf "    make quadlet-enable\n"
+    printf "\n"
+    print_info "Other useful commands:"
+    printf "    make quadlet-status   # Check service status\n"
+    printf "    make quadlet-logs     # View logs\n"
+    printf "    make quadlet-stop     # Stop services\n"
 }
 
 # =============================================================================
