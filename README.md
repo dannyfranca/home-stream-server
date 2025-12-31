@@ -39,6 +39,8 @@ A complete, production-ready stack for home media streaming with automated downl
   - [Podman Quadlet](#option-b-podman-quadlet-setup)
 - [Service Configuration](#part-3-service-configuration)
   - [qBittorrent](#31-qbittorrent-httplocalhost8090)
+    - [Share Ratio Limiting & Auto-Removal](#-share-ratio-limiting--auto-removal-recommended)
+    - [Queue & Connection Limits](#-queue--connection-limits-recommended)
   - [SABnzbd](#32-sabnzbd-httplocalhost8080)
   - [Prowlarr](#33-prowlarr-httplocalhost9696)
   - [Sonarr](#34-sonarr-httplocalhost8989)
@@ -308,6 +310,50 @@ After your containers are running, configure each service using these instructio
 4. Go to **Options** → **Web UI**
    - Change the default password
 
+### 🔄 Share Ratio Limiting & Auto-Removal (Recommended)
+
+To prevent endless torrents accumulating in your queue, configure automatic removal after seeding:
+
+1. Go to **Tools** → **Options** → **BitTorrent**
+2. Scroll to **Share Ratio Limiting** section
+3. Configure these settings:
+
+| Setting                                | Recommended Value      | Notes                              |
+| -------------------------------------- | ---------------------- | ---------------------------------- |
+| **When seeding ratio reaches**         | ☑️ `1.0`                | Upload as much as you downloaded   |
+| **When seeding time reaches**          | ☑️ `10080` min (7 days) | Maximum seeding duration           |
+| **When inactive seeding time reaches** | ☑️ `1440` min (1 day)   | Stop if no upload activity for 24h |
+| **Then**                               | `Remove torrent`       | Removes entry, keeps files         |
+
+> 💡 **How it works**: Torrents will be removed when reaching **either** the ratio limit **or** the time limit (whichever comes first). "Seeding time" only counts active upload time, not inactive periods.
+
+> ⚠️ **Important**: Choose `Remove torrent` (not `Remove torrent and files`) since Sonarr/Radarr will have already imported the files to your media library via hardlinks.
+
+### ⚡ Queue & Connection Limits (Recommended)
+
+The default qBittorrent settings allow too many simultaneous transfers. Reduce them for better performance:
+
+1. Go to **Tools** → **Options** → **BitTorrent**
+2. Scroll to **Torrent Queueing** section and configure:
+
+| Setting                                        | Recommended Value | Notes                                |
+| ---------------------------------------------- | ----------------- | ------------------------------------ |
+| **Maximum active downloads**                   | `3`               | Prevents bandwidth fragmentation     |
+| **Maximum active uploads**                     | `3`               | Reasonable for home connections      |
+| **Maximum active torrents**                    | `5`               | Total active (downloading + seeding) |
+| **Do not count slow torrents in these limits** | ☑️ Enabled         | Allows progress when torrents stall  |
+
+3. Go to **Connection** tab and configure:
+
+| Setting                              | Recommended Value | Notes                               |
+| ------------------------------------ | ----------------- | ----------------------------------- |
+| **Global maximum connections**       | `200`             | Prevents router/system overload     |
+| **Maximum connections per torrent**  | `50`              | Balance between speed and resources |
+| **Global maximum upload slots**      | `10`              | Limits upload connections           |
+| **Maximum upload slots per torrent** | `4`               | Per-torrent upload limit            |
+
+> 💡 **Tip**: These conservative values work well for typical home connections (50-500 Mbps). Increase if you have gigabit fiber and a powerful router.
+
 ---
 
 ## 3.2 SABnzbd (http://localhost:8080)
@@ -381,6 +427,10 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 3. Go to **Settings** → **Download Clients**
    - Add **qBittorrent**: Use hostname from table above, Port: `8090`
    - Add **SABnzbd**: Use hostname from table above, Port: `8080`, API Key from SABnzbd
+4. **Enable Completed Download Handling** (in each download client's advanced settings):
+   - ☑️ **Remove** - Removes torrent from qBittorrent after import
+   
+> 💡 **Note**: Sonarr will only remove torrents after they've stopped seeding (based on qBittorrent's share ratio limits). This works with hardlinks - your media files remain in the library.
 
 ---
 
@@ -392,6 +442,10 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 3. Go to **Settings** → **Download Clients**
    - Add **qBittorrent**: Use hostname from table above, Port: `8090`
    - Add **SABnzbd**: Use hostname from table above, Port: `8080`, API Key from SABnzbd
+4. **Enable Completed Download Handling** (in each download client's advanced settings):
+   - ☑️ **Remove** - Removes torrent from qBittorrent after import
+   
+> 💡 **Note**: Same as Sonarr - torrents are only removed after meeting qBittorrent's share ratio limits.
 
 ---
 
