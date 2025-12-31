@@ -51,6 +51,11 @@ services:
       #   - 192.168.0.0/16: Most home LANs
       # Override via LOCAL_NETWORK_SUBNETS in .env if your setup differs
       - FIREWALL_OUTBOUND_SUBNETS=${LOCAL_NETWORK_SUBNETS:-10.88.0.0/16,172.16.0.0/12,192.168.0.0/16}
+      # DNS Privacy - encrypted DNS to prevent leaks
+      - DNS_KEEP_NAMESERVER=on
+      - DOT=on
+      - DOT_PROVIDERS=cloudflare
+      - DOT_IPV6=off
     ports:
       # qBittorrent WebUI (exposed through gluetun)
       - "${QBITTORRENT_PORT:-8090}:${QBITTORRENT_PORT:-8090}"

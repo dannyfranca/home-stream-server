@@ -38,8 +38,16 @@ spec:
           value: "{{SERVER_COUNTRIES}}"
         - name: TZ
           value: "{{TZ}}"
+        # DNS Privacy Settings
         - name: DNS_KEEP_NAMESERVER
           value: "on"
+        - name: DOT
+          value: "on"
+        - name: DOT_PROVIDERS
+          value: "cloudflare"
+        - name: DOT_IPV6
+          value: "off"
+        # Firewall Settings
         - name: FIREWALL_VPN_INPUT_PORTS
           value: ""
         - name: FIREWALL_INPUT_PORTS
