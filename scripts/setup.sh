@@ -78,13 +78,15 @@ prompt() {
     local result
 
     if [[ -n "$default" ]]; then
-        printf "%s" "${BOLD}$message${NC} [${CYAN}$default${NC}]: "
+        # Print prompt to stderr so it's visible when captured via $(...)
+        printf "%b" "${BOLD}$message${NC} [${CYAN}$default${NC}]: " >&2
         read -r result
         result="${result:-$default}"
     else
-        printf "%s" "${BOLD}$message${NC}: "
+        printf "%b" "${BOLD}$message${NC}: " >&2
         read -r result
     fi
+    # Only the result goes to stdout for capture
     printf "%s\n" "$result"
 }
 
@@ -92,9 +94,11 @@ prompt_secret() {
     local message="$1"
     local result
 
-    printf "%s" "${BOLD}$message${NC}: "
+    # Print prompt to stderr so it's visible when captured via $(...)
+    printf "%b" "${BOLD}$message${NC}: " >&2
     read -rs result
-    printf "\n"
+    printf "\n" >&2
+    # Only the result goes to stdout for capture
     printf "%s\n" "$result"
 }
 
@@ -104,9 +108,9 @@ confirm() {
     local result
 
     if [[ "$default" == "y" ]]; then
-        printf "%s" "${BOLD}$message${NC} [${CYAN}Y/n${NC}]: "
+        printf "%b" "${BOLD}$message${NC} [${CYAN}Y/n${NC}]: "
     else
-        printf "%s" "${BOLD}$message${NC} [${CYAN}y/N${NC}]: "
+        printf "%b" "${BOLD}$message${NC} [${CYAN}y/N${NC}]: "
     fi
     read -r result
     result="${result:-$default}"
@@ -171,6 +175,10 @@ validate_wireguard_key() {
 
 collect_common_config() {
     print_section "Common Configuration"
+    
+    print_info "These settings are shared by all services."
+    print_info "Press Enter to accept the default value shown in brackets."
+    printf "\n"
     
     PUID=$(prompt "User ID (PUID)" "$DEFAULT_PUID")
     PGID=$(prompt "Group ID (PGID)" "$DEFAULT_PGID")
@@ -522,13 +530,11 @@ show_menu() {
     printf "     Best for Fedora Atomic, Bazzite, immutable distros\n"
     printf "     Enables boot-time startup without login\n"
     printf "\n"
-    printf "  ${CYAN}3)${NC} Both - Configure both deployment methods\n"
-    printf "\n"
     printf "  ${CYAN}q)${NC} Quit\n"
     printf "\n"
     
     local choice
-    printf "%s" "${BOLD}Your choice${NC} [1/2/3/q]: "
+    printf "%b" "${BOLD}Your choice${NC} [1/2/q]: "
     read -r choice
     
     case "$choice" in
@@ -540,17 +546,12 @@ show_menu() {
             collect_common_config
             setup_quadlet
             ;;
-        3)
-            collect_common_config
-            setup_docker_compose
-            setup_quadlet
-            ;;
         q|Q)
             printf "Goodbye!\n"
             exit 0
             ;;
         *)
-            print_error "Invalid choice"
+            print_error "Invalid choice. Please enter 1, 2, or q."
             show_menu
             ;;
     esac
