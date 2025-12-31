@@ -76,6 +76,7 @@ help:
 	@printf "  $(CYAN)make permissions$(NC)     Fix directory permissions\n"
 	@printf "  $(CYAN)make validate$(NC)        Validate configuration\n"
 	@printf "  $(CYAN)make vpn-check$(NC)       Verify VPN is working\n"
+	@printf "  $(CYAN)make password$(NC)        Get qBittorrent initial password\n"
 	@printf "  $(CYAN)make clean$(NC)           Remove all data (DANGEROUS!)\n"
 	@printf "\n"
 	@printf "$(BOLD)Detected Runtime:$(NC) $(RUNTIME)\n"
@@ -350,6 +351,17 @@ vpn-check:
 		printf "Container IP (VPN - Protected): %s\n" "$$($(RUNTIME) exec gluetun wget -qO- ifconfig.me/ip 2>/dev/null || $(RUNTIME) exec vpn-services-gluetun wget -qO- ifconfig.me/ip 2>/dev/null || echo 'Failed to verify - Check container logs')"; \
 	else \
 		printf "$(YELLOW)Gluetun container not running$(NC)\n"; \
+	fi
+
+## password: Get qBittorrent initial password
+password:
+	@printf "$(CYAN)Searching for qBittorrent initial password...$(NC)\n"
+	@if [ "$(RUNTIME)" = "podman" ] && systemctl --user is-active vpn-services >/dev/null 2>&1; then \
+		journalctl --user -u vpn-services --no-pager | grep -C 3 "The WebUI administrator password is" || printf "$(YELLOW)Password not found in logs. It may have already rotated or service isn't fully up.$(NC)\n"; \
+	elif [ "$(RUNTIME)" = "docker" ] || [ "$(RUNTIME)" = "podman" ]; then \
+		$(COMPOSE) logs qbittorrent 2>/dev/null | grep -C 3 "The WebUI administrator password is" || printf "$(YELLOW)Password not found in logs. Check if service is running.$(NC)\n"; \
+	else \
+		printf "$(RED)No active runtime found.$(NC)\n"; \
 	fi
 
 ## clean: Remove all data (DANGEROUS!)
