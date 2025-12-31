@@ -47,13 +47,13 @@ print_header() {
     printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
     printf "${BOLD}${CYAN}  🎬 Home Stream Server - Interactive Setup${NC}\n"
     printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-    echo ""
+    printf "\n"
 }
 
 print_section() {
     printf "\n"
     printf "${BOLD}${YELLOW}▶ %s${NC}\n" "$1"
-    echo ""
+    printf "\n"
 }
 
 print_success() {
@@ -78,24 +78,24 @@ prompt() {
     local result
 
     if [[ -n "$default" ]]; then
-        echo -ne "${BOLD}$message${NC} [${CYAN}$default${NC}]: "
+        printf "%s" "${BOLD}$message${NC} [${CYAN}$default${NC}]: "
         read -r result
         result="${result:-$default}"
     else
-        echo -ne "${BOLD}$message${NC}: "
+        printf "%s" "${BOLD}$message${NC}: "
         read -r result
     fi
-    echo "$result"
+    printf "%s\n" "$result"
 }
 
 prompt_secret() {
     local message="$1"
     local result
 
-    echo -ne "${BOLD}$message${NC}: "
+    printf "%s" "${BOLD}$message${NC}: "
     read -rs result
-    echo ""
-    echo "$result"
+    printf "\n"
+    printf "%s\n" "$result"
 }
 
 confirm() {
@@ -104,9 +104,9 @@ confirm() {
     local result
 
     if [[ "$default" == "y" ]]; then
-        echo -ne "${BOLD}$message${NC} [${CYAN}Y/n${NC}]: "
+        printf "%s" "${BOLD}$message${NC} [${CYAN}Y/n${NC}]: "
     else
-        echo -ne "${BOLD}$message${NC} [${CYAN}y/N${NC}]: "
+        printf "%s" "${BOLD}$message${NC} [${CYAN}y/N${NC}]: "
     fi
     read -r result
     result="${result:-$default}"
@@ -144,7 +144,7 @@ validate_path() {
         fi
     fi
     
-    echo "$path"
+    printf "%s\n" "$path"
 }
 
 validate_wireguard_key() {
@@ -177,7 +177,7 @@ collect_common_config() {
     TZ=$(prompt "Timezone" "$DEFAULT_TZ")
     
     print_info "Find your timezone: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
-    echo ""
+    printf "\n"
     
     # Data path with validation
     while true; do
@@ -186,17 +186,17 @@ collect_common_config() {
         print_error "Invalid path, please try again"
     done
     
-    echo ""
+    printf "\n"
     print_section "NordVPN WireGuard Configuration"
     
     printf "${CYAN}To get your WireGuard private key:${NC}\n"
-    echo "  1. Install NordVPN CLI: sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)"
-    echo "  2. sudo nordvpn login"
-    echo "  3. sudo nordvpn set technology nordlynx"
-    echo "  4. sudo nordvpn c"
-    echo "  5. sudo wg showconf nordlynx  # Copy the PrivateKey value"
-    echo "  6. sudo nordvpn d"
-    echo ""
+    printf "  1. Install NordVPN CLI: sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)\n"
+    printf "  2. sudo nordvpn login\n"
+    printf "  3. sudo nordvpn set technology nordlynx\n"
+    printf "  4. sudo nordvpn c\n"
+    printf "  5. sudo wg showconf nordlynx  # Copy the PrivateKey value\n"
+    printf "  6. sudo nordvpn d\n"
+    printf "\n"
     
     while true; do
         WIREGUARD_PRIVATE_KEY=$(prompt_secret "WireGuard Private Key")
@@ -266,10 +266,10 @@ EOF
     create_data_directories
     
     print_success "Docker Compose setup complete!"
-    echo ""
+    printf "\n"
     print_info "To start the stack:"
-    echo "    cd $PROJECT_ROOT"
-    echo "    docker compose up -d   # or: podman compose up -d"
+    printf "    cd %s\n" "$PROJECT_ROOT"
+    printf "    docker compose up -d   # or: podman compose up -d\n"
 }
 
 # =============================================================================
@@ -282,7 +282,7 @@ setup_quadlet() {
     local systemd_dir="$HOME/.config/containers/systemd"
     
     print_info "Quadlet files will be installed to: $systemd_dir"
-    echo ""
+    printf "\n"
     
     # Create systemd directory
     mkdir -p "$systemd_dir"
@@ -369,7 +369,7 @@ EOF
     print_success "Reloaded systemd user daemon"
     
     # Verify units were generated
-    echo ""
+    printf "\n"
     print_info "Generated systemd units:"
     if systemctl --user list-unit-files | grep -E "(vpn-services|media-automation|media-streaming|flaresolverr|tor-proxy)" | head -10; then
         print_success "Quadlet units generated successfully"
@@ -378,18 +378,18 @@ EOF
         /usr/libexec/podman/quadlet --dryrun --user 2>&1 | grep -i error || true
     fi
     
-    echo ""
+    printf "\n"
     print_success "Quadlet setup complete!"
-    echo ""
+    printf "\n"
     print_info "To start the services:"
-    echo "    systemctl --user start vpn-services"
-    echo "    systemctl --user start media-automation"
-    echo "    systemctl --user start media-streaming"
-    echo "    systemctl --user start flaresolverr"
-    echo "    systemctl --user start tor-proxy"
-    echo ""
+    printf "    systemctl --user start vpn-services\n"
+    printf "    systemctl --user start media-automation\n"
+    printf "    systemctl --user start media-streaming\n"
+    printf "    systemctl --user start flaresolverr\n"
+    printf "    systemctl --user start tor-proxy\n"
+    printf "\n"
     print_info "To enable auto-start on boot:"
-    echo "    systemctl --user enable vpn-services media-automation media-streaming flaresolverr tor-proxy"
+    printf "    systemctl --user enable vpn-services media-automation media-streaming flaresolverr tor-proxy\n"
 }
 
 # =============================================================================
@@ -418,11 +418,11 @@ create_data_directories() {
     done
     
     # Set proper permissions for rootless Podman
-    echo ""
+    printf "\n"
     print_section "Configuring Permissions for Rootless Containers"
     
     print_info "This is critical for rootless Podman to access bind-mounted directories."
-    echo ""
+    printf "\n"
     
     if check_command podman; then
         # For rootless Podman, we need to handle user namespace mapping
@@ -438,7 +438,7 @@ create_data_directories() {
             print_warning "podman unshare failed, trying regular chown..."
             chown -R "$PUID:$PGID" "$DATA_PATH" 2>/dev/null || {
                 print_warning "Could not set ownership - you may need to run:"
-                echo "    sudo chown -R \$(id -u):\$(id -g) $DATA_PATH"
+                printf "    sudo chown -R \\$(id -u):\\$(id -g) %s\n" "$DATA_PATH"
             }
         fi
         
@@ -455,8 +455,8 @@ create_data_directories() {
                 print_success "SELinux context set"
             else
                 print_warning "Could not set SELinux context - you may need to run:"
-                echo "    sudo chcon -R -t container_file_t $DATA_PATH"
-                echo ""
+                printf "    sudo chcon -R -t container_file_t %s\n" "$DATA_PATH"
+                printf "\n"
                 print_info "Alternatively, use the :Z suffix on volume mounts (already configured in templates)"
             fi
         else
@@ -478,7 +478,7 @@ create_data_directories() {
     fi
     
     print_success "Directory permissions configured"
-    echo ""
+    printf "\n"
     print_info "If you still get permission errors, see README.md troubleshooting section"
 }
 
@@ -514,21 +514,21 @@ show_menu() {
     print_header
     
     printf "${BOLD}Choose your deployment method:${NC}\n"
-    echo ""
-    echo "  ${CYAN}1)${NC} Docker Compose - Works with Docker or Podman"
-    echo "     Best for most users, simpler setup"
-    echo ""
-    echo "  ${CYAN}2)${NC} Podman Quadlet - Native systemd integration"
-    echo "     Best for Fedora Atomic, Bazzite, immutable distros"
-    echo "     Enables boot-time startup without login"
-    echo ""
-    echo "  ${CYAN}3)${NC} Both - Configure both deployment methods"
-    echo ""
-    echo "  ${CYAN}q)${NC} Quit"
-    echo ""
+    printf "\n"
+    printf "  ${CYAN}1)${NC} Docker Compose - Works with Docker or Podman\n"
+    printf "     Best for most users, simpler setup\n"
+    printf "\n"
+    printf "  ${CYAN}2)${NC} Podman Quadlet - Native systemd integration\n"
+    printf "     Best for Fedora Atomic, Bazzite, immutable distros\n"
+    printf "     Enables boot-time startup without login\n"
+    printf "\n"
+    printf "  ${CYAN}3)${NC} Both - Configure both deployment methods\n"
+    printf "\n"
+    printf "  ${CYAN}q)${NC} Quit\n"
+    printf "\n"
     
     local choice
-    echo -ne "${BOLD}Your choice${NC} [1/2/3/q]: "
+    printf "%s" "${BOLD}Your choice${NC} [1/2/3/q]: "
     read -r choice
     
     case "$choice" in
@@ -546,7 +546,7 @@ show_menu() {
             setup_quadlet
             ;;
         q|Q)
-            echo "Goodbye!"
+            printf "Goodbye!\n"
             exit 0
             ;;
         *)
@@ -565,24 +565,24 @@ show_summary() {
     printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
     printf "${BOLD}${GREEN}  ✓ Setup Complete!${NC}\n"
     printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-    echo ""
+    printf "\n"
     printf "${BOLD}Next Steps:${NC}\n"
-    echo "  1. Start your containers using the commands above"
-    echo "  2. Access the web UIs to configure each service"
-    echo "  3. See README.md for detailed configuration instructions"
-    echo ""
+    printf "  1. Start your containers using the commands above\n"
+    printf "  2. Access the web UIs to configure each service\n"
+    printf "  3. See README.md for detailed configuration instructions\n"
+    printf "\n"
     printf "${BOLD}Service URLs:${NC}\n"
-    echo "  • qBittorrent:  http://localhost:8090"
-    echo "  • SABnzbd:      http://localhost:8080"
-    echo "  • Prowlarr:     http://localhost:9696"
-    echo "  • Sonarr:       http://localhost:8989"
-    echo "  • Radarr:       http://localhost:7878"
-    echo "  • Bazarr:       http://localhost:6767"
-    echo "  • Jellyfin:     http://localhost:8096"
-    echo "  • Jellyseerr:   http://localhost:5055"
-    echo ""
+    printf "  • qBittorrent:  http://localhost:8090\n"
+    printf "  • SABnzbd:      http://localhost:8080\n"
+    printf "  • Prowlarr:     http://localhost:9696\n"
+    printf "  • Sonarr:       http://localhost:8989\n"
+    printf "  • Radarr:       http://localhost:7878\n"
+    printf "  • Bazarr:       http://localhost:6767\n"
+    printf "  • Jellyfin:     http://localhost:8096\n"
+    printf "  • Jellyseerr:   http://localhost:5055\n"
+    printf "\n"
     printf "${BOLD}Happy Streaming! 🍿${NC}\n"
-    echo ""
+    printf "\n"
 }
 
 # =============================================================================
