@@ -29,6 +29,29 @@ A complete, production-ready stack for home media streaming with automated downl
 
 > *Tor Proxy is internal-only (port 9050 not exposed to host)
 
+## 📑 Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Interactive Setup (Recommended)](#-interactive-setup-recommended)
+- [Manual Setup](#-manual-setup)
+  - [Pre-Setup](#part-1-pre-setup-required)
+  - [Docker Compose](#option-a-docker-compose-setup)
+  - [Podman Quadlet](#option-b-podman-quadlet-setup)
+- [Service Configuration](#part-3-service-configuration)
+  - [qBittorrent](#31-qbittorrent-httplocalhost8090)
+  - [SABnzbd](#32-sabnzbd-httplocalhost8080)
+  - [Prowlarr](#33-prowlarr-httplocalhost9696)
+  - [Sonarr](#34-sonarr-httplocalhost8989)
+  - [Radarr](#35-radarr-httplocalhost7878)
+  - [Bazarr](#36-bazarr-httplocalhost6767)
+  - [Jellyfin](#37-jellyfin-httplocalhost8096)
+  - [Jellyseerr](#38-jellyseerr-httplocalhost5055)
+- [Networking Architecture](#-networking-architecture)
+- [Hardware Transcoding](#-hardware-transcoding-optional)
+- [Troubleshooting](#️-troubleshooting)
+- [Directory Structure](#-directory-structure)
+- [Updates](#-updates)
+
 ---
 
 ## 🚀 Quick Start
@@ -42,22 +65,78 @@ A complete, production-ready stack for home media streaming with automated downl
 
 ### Choose Your Setup Method
 
-| Method             | Best For                                    | Guide                    |
-| ------------------ | ------------------------------------------- | ------------------------ |
-| **Docker Compose** | Most users, Docker or Podman                | Continue below           |
-| **Podman Quadlet** | Bazzite, Fedora Atomic, systemd integration | [QUADLET.md](QUADLET.md) |
+| Method                 | Best For                                    | Setup                         |
+| ---------------------- | ------------------------------------------- | ----------------------------- |
+| **Interactive (Easy)** | Everyone - guided wizard                    | `make setup`                  |
+| **Docker Compose**     | Docker or Podman users                      | [Manual Setup](#manual-setup) |
+| **Podman Quadlet**     | Bazzite, Fedora Atomic, systemd integration | [Quadlet Guide](QUADLET.md)   |
 
 ---
 
-# Part 1: Pre-Setup (Required for All Methods)
+# 🧙 Interactive Setup (Recommended)
 
-Complete these steps before proceeding to Docker Compose or Quadlet setup.
+The easiest way to get started is our interactive setup wizard:
 
-## 1.1 Get Your NordVPN WireGuard Key
+```bash
+# Clone the repository
+git clone https://github.com/dannyfranca/home-stream-server.git
+cd home-stream-server
+
+# Run the interactive setup
+make setup
+```
+
+The wizard will:
+1. Ask for your configuration (user IDs, timezone, paths)
+2. Guide you through getting your NordVPN WireGuard key
+3. Create all necessary directories with proper permissions
+4. Set up either Docker Compose or Podman Quadlet (your choice)
+5. For Quadlet: Enable lingering for boot-time startup
+
+### Available Make Commands
+
+```bash
+make help              # Show all available commands
+
+# Setup
+make setup             # Interactive setup wizard
+make compose           # Setup Docker Compose only
+make quadlet           # Setup Quadlet only
+
+# Docker Compose
+make compose-start     # Start compose stack
+make compose-stop      # Stop compose stack
+make compose-logs      # View logs
+make compose-status    # Check status
+
+# Quadlet
+make quadlet-start     # Start all services
+make quadlet-stop      # Stop all services
+make quadlet-logs      # View logs
+make quadlet-status    # Check status
+make quadlet-enable    # Enable boot-time startup
+
+# Utilities
+make validate          # Check configuration
+make vpn-check         # Verify VPN is working
+make permissions       # Fix directory permissions
+```
+
+➡️ **After setup, continue to [Service Configuration](#part-3-service-configuration)**
+
+---
+
+# 📖 Manual Setup
+
+If you prefer manual configuration over the interactive wizard, follow these steps.
+
+## Part 1: Pre-Setup (Required)
+
+### 1.1 Get Your NordVPN WireGuard Key
 
 You need to extract your WireGuard private key from NordVPN. Choose one method:
 
-### Method A: Using NordVPN Linux CLI (Recommended)
+#### Method A: Using NordVPN Linux CLI (Recommended)
 
 ```bash
 # Install NordVPN CLI (if not installed)
@@ -79,7 +158,7 @@ sudo wg showconf nordlynx
 sudo nordvpn d
 ```
 
-### Method B: Using Access Token
+#### Method B: Using Access Token
 
 1. Go to [NordVPN Dashboard](https://my.nordaccount.com/dashboard/nordvpn/)
 2. Navigate to **Manual Setup** → **Set up NordVPN manually**
@@ -91,7 +170,7 @@ curl -s "https://api.nordvpn.com/v1/users/services/credentials" \
   -u token:YOUR_TOKEN | jq -r '.nordlynx_private_key'
 ```
 
-## 1.2 Configure Environment Variables
+### 1.2 Configure Environment Variables
 
 ```bash
 # Navigate to the project
@@ -121,14 +200,14 @@ DATA_PATH=/srv/media
 WIREGUARD_PRIVATE_KEY=your_private_key_here
 ```
 
-## 1.3 Create Media Directory Structure
+### 1.3 Create Media Directory Structure
 
 ```bash
 # Set your data path (match your .env)
 DATA_PATH=/var/home/YOUR_USER/media
 
 # Create media and torrent directories
-sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},usenet/{movies,tv},media/{movies,tv}}
+sudo mkdir -p $DATA_PATH/{torrents/{movies,tv},usenet/{movies,tv,complete,incomplete},media/{movies,tv}}
 
 # Set ownership to your user
 sudo chown -R $(id -u):$(id -g) $DATA_PATH
@@ -144,15 +223,15 @@ ls -la $DATA_PATH
 
 ---
 
-# Part 2: Technical Setup
+## Part 2: Technical Setup
 
 Choose **one** of the following based on your preference:
 
-## Option A: Docker Compose Setup
+### Option A: Docker Compose Setup
 
 This works with both **Docker** and **Podman**.
 
-### Start the Stack
+#### Start the Stack
 
 ```bash
 cd ~/git/home-stream-server
@@ -167,7 +246,7 @@ docker compose up -d  # or: podman compose up -d
 docker compose ps  # or: podman compose ps
 ```
 
-### Verify VPN Connection
+#### Verify VPN Connection
 
 ```bash
 # Check your current public IP
@@ -181,7 +260,7 @@ docker exec gluetun wget -qO- ifconfig.me && echo
 
 ---
 
-## Option B: Podman Quadlet Setup
+### Option B: Podman Quadlet Setup
 
 For systemd integration on Fedora Atomic, Bazzite, or other immutable distros.
 
@@ -316,7 +395,7 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 
 ---
 
-## 3.5 Bazarr (http://localhost:6767)
+## 3.6 Bazarr (http://localhost:6767)
 
 1. Go to **Settings** → **Sonarr**
    - Enable, use Sonarr hostname from table, Port: `8989`, API Key from Sonarr
@@ -491,14 +570,34 @@ Ensure Sonarr/Radarr paths match:
 - Download Client Remote Path: `/data/torrents`
 - Library Root Folder: `/data/media/{movies,tv}`
 
+## Quadlet Services Won't Start at Boot
+
+For services to start at boot (without logging in), you need **lingering** enabled:
+
+```bash
+# Enable lingering for your user
+sudo loginctl enable-linger $USER
+
+# Verify it's enabled
+loginctl show-user $USER | grep Linger
+# Should show: Linger=yes
+
+# Enable the services
+systemctl --user enable vpn-services media-automation media-streaming flaresolverr tor-proxy
+```
+
 ---
 
 # 📁 Directory Structure
 
 ```
 home-stream-server/
+├── Makefile                # Make commands for setup and management
+├── scripts/
+│   └── setup.sh            # Interactive setup wizard
 ├── docker-compose.yml      # Docker/Podman Compose config
-├── quadlet/                # Podman Quadlet files (alternative)
+├── quadlet/
+│   └── templates/          # Quadlet templates (processed during setup)
 ├── prowlarr-definitions/   # Custom indexers (1337x-onion, etc.)
 ├── .env                    # Environment config (git-ignored)
 └── .env.example            # Template for .env
@@ -536,8 +635,9 @@ docker image prune -f
 ## Quadlet
 
 ```bash
-# Update images in YAML files, then:
-systemctl --user restart vpn-services media-automation media-streaming
+# Update images in template YAML files, then:
+make quadlet           # Re-process templates
+make quadlet-start     # Restart services
 podman image prune -f
 ```
 
