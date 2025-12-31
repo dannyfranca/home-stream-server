@@ -43,33 +43,33 @@ SERVER_COUNTRIES=""
 # =============================================================================
 
 print_header() {
-    echo ""
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BOLD}${CYAN}  🎬 Home Stream Server - Interactive Setup${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    printf "\n"
+    printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    printf "${BOLD}${CYAN}  🎬 Home Stream Server - Interactive Setup${NC}\n"
+    printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
     echo ""
 }
 
 print_section() {
-    echo ""
-    echo -e "${BOLD}${YELLOW}▶ $1${NC}"
+    printf "\n"
+    printf "${BOLD}${YELLOW}▶ %s${NC}\n" "$1"
     echo ""
 }
 
 print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    printf "${GREEN}✓${NC} %s\n" "$1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    printf "${YELLOW}⚠${NC} %s\n" "$1"
 }
 
 print_error() {
-    echo -e "${RED}✗${NC} $1"
+    printf "${RED}✗${NC} %s\n" "$1"
 }
 
 print_info() {
-    echo -e "${CYAN}ℹ${NC} $1"
+    printf "${CYAN}ℹ${NC} %s\n" "$1"
 }
 
 prompt() {
@@ -189,7 +189,7 @@ collect_common_config() {
     echo ""
     print_section "NordVPN WireGuard Configuration"
     
-    echo -e "${CYAN}To get your WireGuard private key:${NC}"
+    printf "${CYAN}To get your WireGuard private key:${NC}\n"
     echo "  1. Install NordVPN CLI: sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)"
     echo "  2. sudo nordvpn login"
     echo "  3. sudo nordvpn set technology nordlynx"
@@ -513,7 +513,7 @@ enable_lingering() {
 show_menu() {
     print_header
     
-    echo -e "${BOLD}Choose your deployment method:${NC}"
+    printf "${BOLD}Choose your deployment method:${NC}\n"
     echo ""
     echo "  ${CYAN}1)${NC} Docker Compose - Works with Docker or Podman"
     echo "     Best for most users, simpler setup"
@@ -561,17 +561,17 @@ show_menu() {
 # =============================================================================
 
 show_summary() {
+    printf "\n"
+    printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    printf "${BOLD}${GREEN}  ✓ Setup Complete!${NC}\n"
+    printf "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
     echo ""
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BOLD}${GREEN}  ✓ Setup Complete!${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo -e "${BOLD}Next Steps:${NC}"
+    printf "${BOLD}Next Steps:${NC}\n"
     echo "  1. Start your containers using the commands above"
     echo "  2. Access the web UIs to configure each service"
     echo "  3. See README.md for detailed configuration instructions"
     echo ""
-    echo -e "${BOLD}Service URLs:${NC}"
+    printf "${BOLD}Service URLs:${NC}\n"
     echo "  • qBittorrent:  http://localhost:8090"
     echo "  • SABnzbd:      http://localhost:8080"
     echo "  • Prowlarr:     http://localhost:9696"
@@ -581,7 +581,7 @@ show_summary() {
     echo "  • Jellyfin:     http://localhost:8096"
     echo "  • Jellyseerr:   http://localhost:5055"
     echo ""
-    echo -e "${BOLD}Happy Streaming! 🍿${NC}"
+    printf "${BOLD}Happy Streaming! 🍿${NC}\n"
     echo ""
 }
 

@@ -150,7 +150,7 @@ QUADLET_SERVICES := vpn-services media-automation media-streaming flaresolverr t
 
 ## quadlet-install: Install quadlet templates (internal)
 quadlet-install:
-	@echo "$(CYAN)Installing Quadlet templates...$(NC)"
+	@printf "$(CYAN)Installing Quadlet templates...$(NC)\n"
 	@mkdir -p $(SYSTEMD_DIR)
 	@# Source environment variables and process templates
 	@if [ -f .env ]; then \
@@ -164,7 +164,7 @@ quadlet-install:
 		PROWLARR_DEFINITIONS_PATH="$(SYSTEMD_DIR)/prowlarr-definitions"; \
 		for template in $(TEMPLATES_DIR)/*; do \
 			filename=$$(basename "$$template"); \
-			echo "  Processing: $$filename"; \
+			printf "  Processing: %s\n" "$$filename"; \
 			sed \
 				-e "s|{{PUID}}|$$PUID|g" \
 				-e "s|{{PGID}}|$$PGID|g" \
@@ -174,7 +174,7 @@ quadlet-install:
 				-e "s|{{PROWLARR_DEFINITIONS_PATH}}|$$PROWLARR_DEFINITIONS_PATH|g" \
 				"$$template" > "$(SYSTEMD_DIR)/$$filename"; \
 		done; \
-		echo "  Creating: wireguard-secret.yaml"; \
+		printf "  Creating: wireguard-secret.yaml\n"; \
 		printf '%s\n' \
 			"# WireGuard Secret - AUTO-GENERATED, DO NOT COMMIT" \
 			"apiVersion: v1" \
@@ -188,11 +188,11 @@ quadlet-install:
 		chmod 700 "$(SYSTEMD_DIR)"; \
 		cp -r prowlarr-definitions "$(SYSTEMD_DIR)/"; \
 	else \
-		echo "$(RED)Error: .env file not found$(NC)"; \
+		printf "$(RED)Error: .env file not found$(NC)\n"; \
 		exit 1; \
 	fi
-	@echo "$(GREEN)✓ Installed to $(SYSTEMD_DIR)$(NC)"
-	@echo "$(GREEN)✓ Secret file created with chmod 600$(NC)"
+	@printf "$(GREEN)✓ Installed to $(SYSTEMD_DIR)$(NC)\n"
+	@printf "$(GREEN)✓ Secret file created with chmod 600$(NC)\n"
 
 ## quadlet-reload: Reload systemd daemon
 quadlet-reload:
@@ -252,11 +252,11 @@ quadlet-enable:
 
 ## quadlet-disable: Disable Quadlet services at boot
 quadlet-disable:
-	@echo "$(CYAN)Disabling services...$(NC)"
+	@printf "$(CYAN)Disabling services...$(NC)\n"
 	@for svc in $(QUADLET_SERVICES); do \
 		systemctl --user disable $$svc || true; \
 	done
-	@echo "$(GREEN)✓ Services disabled$(NC)"
+	@printf "$(GREEN)✓ Services disabled$(NC)\n"
 
 # =============================================================================
 # Utility Targets
