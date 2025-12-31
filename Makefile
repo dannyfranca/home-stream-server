@@ -146,7 +146,7 @@ compose-update:
 
 SYSTEMD_DIR := $(HOME)/.config/containers/systemd
 TEMPLATES_DIR := quadlet
-QUADLET_SERVICES := vpn-services media-automation media-streaming flaresolverr tor-proxy
+QUADLET_SERVICES := home-stream-network vpn-services media-automation media-streaming flaresolverr tor-proxy
 
 ## quadlet-install: Install quadlet templates (internal)
 quadlet-install:
@@ -344,10 +344,10 @@ permissions:
 vpn-check:
 	@printf "$(CYAN)Checking VPN status...$(NC)\n"
 	@printf "\n"
-	@printf "Your IP: %s\n" "$$(curl -s ifconfig.me)"
+	@printf "Host IP (ISP - Unprotected): %s\n" "$$(curl -s ifconfig.me)"
 	@printf "\n"
 	@if $(RUNTIME) ps | grep -q gluetun; then \
-		printf "VPN Container IP: %s\n" "$$($(RUNTIME) exec gluetun wget -qO- ifconfig.me 2>/dev/null || $(RUNTIME) exec vpn-services-gluetun wget -qO- ifconfig.me 2>/dev/null || echo 'Failed to get VPN IP')"; \
+		printf "Container IP (VPN - Protected): %s\n" "$$($(RUNTIME) exec gluetun wget -qO- ifconfig.me/ip 2>/dev/null || $(RUNTIME) exec vpn-services-gluetun wget -qO- ifconfig.me/ip 2>/dev/null || echo 'Failed to verify - Check container logs')"; \
 	else \
 		printf "$(YELLOW)Gluetun container not running$(NC)\n"; \
 	fi

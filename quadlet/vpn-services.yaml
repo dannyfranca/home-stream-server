@@ -53,7 +53,7 @@ spec:
         - name: FIREWALL_INPUT_PORTS
           value: "8090,8080,9696"
         - name: FIREWALL_OUTBOUND_SUBNETS
-          value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+          value: "10.88.0.0/16,172.16.0.0/12,192.168.0.0/16"
       volumeMounts:
         - name: gluetun-config
           mountPath: /gluetun
