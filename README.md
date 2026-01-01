@@ -408,8 +408,8 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
    - Go to **Settings** → **Indexers** → **Indexer Proxies**
    - Click **+** → **SOCKS5**
    - **Name**: `Tor`
-   - **Host**: `tor-proxy` (Docker Compose) or `systemd-tor-proxy` (Quadlet)
-   - **Port**: `9050`
+   - **Host**: `tor-proxy`
+   - **Port**: `9150`
    - **Tag**: `tor`
    - Click **Test** then **Save**
 
