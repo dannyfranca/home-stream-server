@@ -10,7 +10,7 @@ ContainerName=tor-proxy
 Network=home-stream.network
 
 # Health check - verify Tor is working
-HealthCmd=nc -z localhost 9150
+HealthCmd=nc -z 127.0.0.1 9150
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
