@@ -322,12 +322,12 @@ To prevent endless torrents accumulating in your queue, configure automatic remo
 2. Scroll to **Seeding Limits** section
 3. Configure these settings:
 
-| Setting                                | Recommended Value      | Notes                                 |
-| -------------------------------------- | ---------------------- | ------------------------------------- |
-| **When seeding ratio reaches**         | ☑️ `1.0`                | Upload as much as you downloaded      |
-| **When seeding time reaches**          | ☑️ `10080` min (7 days) | Maximum seeding duration              |
-| **When inactive seeding time reaches** | ☑️ `1440` min (1 day)   | Stop if no upload activity for 24h    |
-| **Then**                               | `Pause torrent`        | Pauses seeding, allows *Arr to remove |
+| Setting                                | Recommended Value    | Notes                                 |
+| -------------------------------------- | -------------------- | ------------------------------------- |
+| **When seeding ratio reaches**         | `1.0`                | Upload as much as you downloaded      |
+| **When seeding time reaches**          | `10080` min (7 days) | Maximum seeding duration              |
+| **When inactive seeding time reaches** | `1440` min (1 day)   | Stop if no upload activity for 24h    |
+| **Then**                               | `Pause torrent`      | Pauses seeding, allows *Arr to remove |
 
 > 💡 **How it works**: Torrents will be **paused** when reaching the ratio/time limit. Sonarr/Radarr will detect this paused state, import the file (if not done already), and then **automatically remove** the torrent and its files from qBittorrent.
 
@@ -345,7 +345,7 @@ The default qBittorrent settings allow too many simultaneous transfers. Reduce t
 | **Maximum active downloads**                   | `3`               | Prevents bandwidth fragmentation     |
 | **Maximum active uploads**                     | `3`               | Reasonable for home connections      |
 | **Maximum active torrents**                    | `5`               | Total active (downloading + seeding) |
-| **Do not count slow torrents in these limits** | ☑️ Enabled         | Allows progress when torrents stall  |
+| **Do not count slow torrents in these limits** | Enabled           | Allows progress when torrents stall  |
 
 3. Go to **Connection** tab and configure:
 
@@ -433,7 +433,7 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
    - Add **qBittorrent**: Use hostname from table above, Port: `8090`
    - Add **SABnzbd**: Use hostname from table above, Port: `8080`, API Key from SABnzbd
 4. **Enable Completed Download Handling** (in each download client's advanced settings):
-   - ☑️ **Remove** - Removes torrent from qBittorrent after import
+   - **Remove** - Removes torrent from qBittorrent after import
    
 > 💡 **Note**: Sonarr will only remove torrents after they have **finished seeding** (i.e., they are in a "Paused" state in qBittorrent). This ensures you meet your seeding goals before the file is deleted from the download folder. Your media library file remains safe.
 
@@ -448,7 +448,7 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
    - Add **qBittorrent**: Use hostname from table above, Port: `8090`
    - Add **SABnzbd**: Use hostname from table above, Port: `8080`, API Key from SABnzbd
 4. **Enable Completed Download Handling** (in each download client's advanced settings):
-   - ☑️ **Remove** - Removes torrent from qBittorrent after import
+   - **Remove** - Removes torrent from qBittorrent after import
    
 > 💡 **Note**: Same as Sonarr - torrents are only removed after meeting qBittorrent's share ratio limits.
 
@@ -461,7 +461,7 @@ Bazarr automatically downloads subtitles for your media.
 ### 1. Connect to Sonarr & Radarr
 
 Go to **Settings** → **Sonarr** (then repeat for **Radarr**):
-- ☑️ **Enabled**, use hostname from [table above](#service-hostnames-reference)
+- **Enabled**, use hostname from [table above](#service-hostnames-reference)
 - **API Key**: Copy from each app's **Settings** → **General**
 - Click **Test** then **Save**
 
@@ -488,8 +488,8 @@ Go to **Settings** → **Providers** and add from this table:
 ### 4. Subtitles Settings
 
 Go to **Settings** → **Subtitles**:
-- **Upgrade Subtitles**: ☑️ Enabled (auto-upgrades to better quality)
-- **Encode to UTF-8**: ☑️ Enabled (fixes encoding issues)
+- **Upgrade Subtitles**: Enabled (auto-upgrades to better quality)
+- **Encode to UTF-8**: Enabled (fixes encoding issues)
 
 After saving, Bazarr will sync your library and automatically download missing subtitles.
 
@@ -510,9 +510,9 @@ After saving, Bazarr will sync your library and automatically download missing s
 1. Sign in with your Jellyfin credentials
 2. Add Jellyfin server: Use Jellyfin hostname from table
 3. Add Radarr: Use Radarr hostname from table + API key
-   - ☑️ **Enable Delete**: Allows deleting movies from disk via Jellyseerr
+   - **Enable Delete**: Allows deleting movies from disk via Jellyseerr
 4. Add Sonarr: Use Sonarr hostname from table + API key
-   - ☑️ **Enable Delete**: Allows deleting series from disk via Jellyseerr
+   - **Enable Delete**: Allows deleting series from disk via Jellyseerr
 
 > 💡 **Tip**: When you want to remove content, doing it from Jellyseerr is the cleanest method. It will remove the request and instruct Sonarr/Radarr to delete the media files.
 
