@@ -381,6 +381,7 @@ The default qBittorrent settings allow too many simultaneous transfers. Reduce t
 2. **Connect FlareSolverr** (for Cloudflare-protected indexers):
    - Go to **Settings** → **Indexers**
    - Add **FlareSolverr**: `http://flaresolverr:8191`
+   - Add tag `flaresolverr`
    - Test the connection
 3. Go to **Settings** → **Apps**
    - Add **Sonarr**: Use hostname from table above + API key from Sonarr
@@ -455,14 +456,42 @@ This stack includes a custom **1337x (Onion)** indexer that bypasses Cloudflare 
 
 ## 3.6 Bazarr (http://localhost:6767)
 
-1. Go to **Settings** → **Sonarr**
-   - Enable, use Sonarr hostname from table, Port: `8989`, API Key from Sonarr
-2. Go to **Settings** → **Radarr**
-   - Enable, use Radarr hostname from table, Port: `7878`, API Key from Radarr
-3. Go to **Settings** → **Languages**
-   - Set your preferred subtitle languages
-4. Go to **Settings** → **Providers**
-   - Enable subtitle providers (OpenSubtitles, Subscene, etc.)
+Bazarr automatically downloads subtitles for your media.
+
+### 1. Connect to Sonarr & Radarr
+
+Go to **Settings** → **Sonarr** (then repeat for **Radarr**):
+- ☑️ **Enabled**, use hostname from [table above](#service-hostnames-reference)
+- **API Key**: Copy from each app's **Settings** → **General**
+- Click **Test** then **Save**
+
+### 2. Create a Language Profile
+
+1. **Settings** → **Languages** → **Add New Profile**
+2. Name it (e.g., `English`), click **Add Language**, select your language
+3. Under **Default Settings**: Set this profile as default for Series and Movies
+4. **Save**
+
+### 3. Add Subtitle Providers
+
+Go to **Settings** → **Providers** and add from this table:
+
+| Provider                | Account Required?                                                  | Notes                                    |
+| ----------------------- | ------------------------------------------------------------------ | ---------------------------------------- |
+| **OpenSubtitles.com** ⭐ | Yes ([register free](https://www.opensubtitles.com/users/sign_up)) | Best coverage, has daily quota           |
+| **SubDL** ⭐             | Yes ([free API key](https://subdl.com))                            | Excellent coverage, register for API key |
+| **YIFY Subtitles**      | No                                                                 | Great for movies                         |
+| **TVSubtitles**         | No                                                                 | Good for TV shows                        |
+
+> 💡 **Recommended**: Enable **OpenSubtitles.com** + **SubDL** for best results.
+
+### 4. Subtitles Settings
+
+Go to **Settings** → **Subtitles**:
+- **Upgrade Subtitles**: ☑️ Enabled (auto-upgrades to better quality)
+- **Encode to UTF-8**: ☑️ Enabled (fixes encoding issues)
+
+After saving, Bazarr will sync your library and automatically download missing subtitles.
 
 ---
 
