@@ -221,6 +221,49 @@ collect_common_config() {
     done
     
     SERVER_COUNTRIES=$(prompt "VPN Server Countries" "$DEFAULT_SERVER_COUNTRIES")
+    
+    # Optional Plex configuration
+    printf "\n"
+    print_section "Plex Media Server (Optional)"
+    
+    print_info "Plex can run alongside Jellyfin, sharing the same media libraries."
+    print_info "Both servers can be active simultaneously with watch state sync."
+    printf "\n"
+    
+    PLEX_ENABLED="false"
+    PLEX_CLAIM=""
+    
+    if confirm "Enable Plex Media Server?" "n"; then
+        PLEX_ENABLED="true"
+        printf "\n"
+        printf "${CYAN}To claim your Plex server, you need a claim token:${NC}\n"
+        printf "  1. Go to: ${BOLD}https://plex.tv/claim${NC}\n"
+        printf "  2. Sign in to your Plex account\n"
+        printf "  3. Copy the claim token (starts with 'claim-')\n"
+        printf "  4. Token is valid for ${YELLOW}4 minutes${NC} only!\n"
+        printf "\n"
+        print_info "You can skip this now and add the token to .env later."
+        printf "\n"
+        
+        PLEX_CLAIM=$(prompt "Plex Claim Token (or press Enter to skip)" "")
+        
+        if [[ -n "$PLEX_CLAIM" ]]; then
+            if [[ ! "$PLEX_CLAIM" =~ ^claim- ]]; then
+                print_warning "Token doesn't start with 'claim-' - it may not work"
+                if ! confirm "Use it anyway?"; then
+                    PLEX_CLAIM=""
+                fi
+            fi
+        fi
+        
+        if [[ -z "$PLEX_CLAIM" ]]; then
+            print_info "No claim token provided. Add PLEX_CLAIM to .env before first run."
+        else
+            print_success "Plex claim token saved"
+        fi
+    else
+        print_info "Skipping Plex. You can enable it later by uncommenting in docker-compose.yml"
+    fi
 }
 
 # =============================================================================
@@ -266,6 +309,21 @@ JELLYSEERR_PORT=5055
 # Local Network Subnets (for VPN firewall exceptions)
 # LOCAL_NETWORK_SUBNETS=10.88.0.0/16,172.16.0.0/12,192.168.0.0/16
 EOF
+    
+    # Add Plex configuration if enabled
+    if [[ "$PLEX_ENABLED" == "true" ]]; then
+        cat >> "$env_file" << EOF
+
+# Plex Media Server
+PLEX_PORT=32400
+PLEX_CLAIM=$PLEX_CLAIM
+
+# Watchstate - Watch State Sync
+WATCHSTATE_PORT=8787
+EOF
+        print_info "Plex configuration added to .env"
+        print_warning "Remember to uncomment the plex and watchstate services in docker-compose.yml"
+    fi
     
     print_success "Created $env_file"
     
@@ -633,6 +691,12 @@ show_summary() {
     printf "  • Bazarr:       http://localhost:6767\n"
     printf "  • Jellyfin:     http://localhost:8096\n"
     printf "  • Jellyseerr:   http://localhost:5055\n"
+    
+    if [[ "$PLEX_ENABLED" == "true" ]]; then
+        printf "  • Plex:         http://localhost:32400/web\n"
+        printf "  • Watchstate:   http://localhost:8787\n"
+    fi
+    
     printf "\n"
     printf "${BOLD}Happy Streaming! 🍿${NC}\n"
     printf "\n"
