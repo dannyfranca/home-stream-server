@@ -12,6 +12,8 @@
 #   - Bazarr:      Automatic subtitles
 #   - Jellyfin:    Media streaming server
 #   - Jellyseerr:  Request management UI
+#   - Plex:        Media streaming (optional, alternative to Jellyfin)
+#   - Watchstate:  Watch state sync between Jellyfin/Plex (optional)
 #
 # Usage:
 #   1. Copy .env.example to .env and configure
@@ -262,10 +264,52 @@ services:
     restart: unless-stopped
     depends_on:
       - jellyfin
+  # ===========================================================================
+  # (OPTIONAL) Plex Media Server - Alternative to Jellyfin
+  # ===========================================================================
+  # Uncomment to enable. Run 'make setup' to configure or see README.
+  # Shares the same media directories as Jellyfin - both can run simultaneously.
+  #
+  # plex:
+  #   image: lscr.io/linuxserver/plex:1.41.4
+  #   container_name: plex
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TZ}
+  #     - VERSION=docker
+  #     # Claim token for initial setup (get from https://plex.tv/claim, valid 4 min)
+  #     - PLEX_CLAIM=${PLEX_CLAIM:-}
+  #   volumes:
+  #     - plex_config:/config
+  #     - ${DATA_PATH}/media:/data/media
+  #   ports:
+  #     - "${PLEX_PORT:-32400}:32400"
+  #   # Uncomment for Intel QuickSync hardware transcoding:
+  #   devices:
+  #     - /dev/dri:/dev/dri
+  #   restart: unless-stopped
 
-# =============================================================================
-# Named Volumes - Managed by Docker/Podman for automatic permissions
-# =============================================================================
+  # ===========================================================================
+  # (OPTIONAL) Watchstate - Sync watch state between Jellyfin and Plex
+  # ===========================================================================
+  # Keeps watch history in sync between Jellyfin and Plex bidirectionally.
+  # Requires Plex to be enabled. Provides WebUI for configuration at :8787.
+  # See: https://github.com/arabcoders/watchstate
+  #
+  # watchstate:
+  #   image: ghcr.io/arabcoders/watchstate:v1.0.5
+  #   container_name: watchstate
+  #   user: "${PUID}:${PGID}"
+  #   volumes:
+  #     - watchstate_config:/config
+  #   ports:
+  #     - "${WATCHSTATE_PORT:-8787}:8080"
+  #   restart: unless-stopped
+
+  # =============================================================================
+  # Named Volumes - Managed by Docker/Podman for automatic permissions
+  # =============================================================================
 volumes:
   gluetun_config:
   qbittorrent_config:
@@ -276,3 +320,6 @@ volumes:
   bazarr_config:
   jellyfin_config:
   jellyseerr_config:
+    # Uncomment if using Plex/Watchstate:
+    # plex_config:
+    # watchstate_config:

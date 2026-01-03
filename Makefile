@@ -18,7 +18,7 @@
 .PHONY: setup compose quadlet start stop status logs update clean help \
         compose-start compose-stop compose-logs compose-status compose-update \
         quadlet-start quadlet-stop quadlet-logs quadlet-status quadlet-update \
-        dirs permissions check-env validate
+        dirs permissions check-env validate plex-claim
 
 # Detect container runtime
 DOCKER := $(shell command -v docker 2>/dev/null)
@@ -77,6 +77,7 @@ help:
 	@printf "  $(CYAN)make validate$(NC)        Validate configuration\n"
 	@printf "  $(CYAN)make vpn-check$(NC)       Verify VPN is working\n"
 	@printf "  $(CYAN)make password$(NC)        Get qBittorrent initial password\n"
+	@printf "  $(CYAN)make plex-claim$(NC)      Get Plex claim token instructions\n"
 	@printf "  $(CYAN)make clean$(NC)           Remove all data (DANGEROUS!)\n"
 	@printf "\n"
 	@printf "$(BOLD)Detected Runtime:$(NC) $(RUNTIME)\n"
@@ -188,6 +189,15 @@ quadlet-install:
 		chmod 600 "$(SYSTEMD_DIR)/wireguard-secret.yaml"; \
 		chmod 700 "$(SYSTEMD_DIR)"; \
 		cp -r prowlarr-definitions "$(SYSTEMD_DIR)/"; \
+		if [ -n "$$PLEX_CLAIM" ]; then \
+			printf "  Creating: plex-claim.env\n"; \
+			printf '%s\n' \
+				"# Plex Claim Token - AUTO-GENERATED" \
+				"# Only needed for first run, can be removed after claiming" \
+				"PLEX_CLAIM=$$PLEX_CLAIM" \
+				> "$(SYSTEMD_DIR)/plex-claim.env"; \
+			chmod 600 "$(SYSTEMD_DIR)/plex-claim.env"; \
+		fi; \
 	else \
 		printf "$(RED)Error: .env file not found$(NC)\n"; \
 		exit 1; \
@@ -363,6 +373,24 @@ password:
 	else \
 		printf "$(RED)No active runtime found.$(NC)\n"; \
 	fi
+
+## plex-claim: Get Plex claim token instructions
+plex-claim:
+	@printf "\n"
+	@printf "$(BOLD)$(CYAN)🎬 Plex Claim Token$(NC)\n"
+	@printf "\n"
+	@printf "To claim your Plex server, you need a token from Plex.tv:\n"
+	@printf "\n"
+	@printf "  1. Open: $(BOLD)https://plex.tv/claim$(NC)\n"
+	@printf "  2. Sign in to your Plex account\n"
+	@printf "  3. Copy the claim token (starts with 'claim-')\n"
+	@printf "  4. Add to your .env file: PLEX_CLAIM=claim-xxxx\n"
+	@printf "\n"
+	@printf "$(YELLOW)⚠ Token is valid for 4 minutes only!$(NC)\n"
+	@printf "\n"
+	@printf "After adding the token, uncomment the plex service in docker-compose.yml\n"
+	@printf "and restart: make compose-start\n"
+	@printf "\n"
 
 ## clean: Remove all data (DANGEROUS!)
 clean:
