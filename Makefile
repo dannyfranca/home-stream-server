@@ -148,7 +148,7 @@ compose-update:
 
 SYSTEMD_DIR := $(HOME)/.config/containers/systemd
 TEMPLATES_DIR := quadlet
-QUADLET_SERVICES := home-stream-network vpn-services media-automation media-streaming flaresolverr tor-proxy
+QUADLET_SERVICES := home-stream-network vpn-services media-automation media-streaming flaresolverr tor-proxy plex watchstate
 
 ## quadlet-install: Install quadlet templates (internal)
 quadlet-install:

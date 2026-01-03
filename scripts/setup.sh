@@ -322,7 +322,16 @@ PLEX_CLAIM=$PLEX_CLAIM
 WATCHSTATE_PORT=8787
 EOF
         print_info "Plex configuration added to .env"
-        print_warning "Remember to uncomment the plex and watchstate services in docker-compose.yml"
+        
+        # Automatically uncomment plex and watchstate in docker-compose.yml
+        if [[ -f "$PROJECT_ROOT/docker-compose.yml" ]]; then
+            print_info "Activating Plex and Watchstate in docker-compose.yml..."
+            # Uncomment the services
+            sed -i '/plex:/s/^  # //; /plex:/,/restart: /s/^  # //; /watchstate:/s/^  # //; /watchstate:/,/restart: /s/^  # //' "$PROJECT_ROOT/docker-compose.yml"
+            # Uncomment the volumes
+            sed -i '/plex_config:/s/^    # //; /watchstate_config:/s/^    # //; /Uncomment if using Plex/s/^    # //' "$PROJECT_ROOT/docker-compose.yml"
+            print_success "Plex and Watchstate activated in docker-compose.yml"
+        fi
     fi
     
     print_success "Created $env_file"
@@ -338,6 +347,9 @@ EOF
     if confirm "Start services now?" "y"; then
         printf "\n"
         print_info "Starting Docker Compose stack..."
+        if [[ "$PLEX_ENABLED" == "true" ]]; then
+            print_info "(Including Plex and Watchstate)"
+        fi
         if check_command podman; then
             podman compose up -d && print_success "Services started!" || print_error "Failed to start services"
         elif check_command docker; then
@@ -366,16 +378,13 @@ setup_quadlet() {
     print_section "Podman Quadlet Setup"
     
     local systemd_dir="$HOME/.config/containers/systemd"
+    local templates_dir="$PROJECT_ROOT/quadlet"
     
     print_info "Quadlet files will be installed to: $systemd_dir"
     printf "\n"
     
     # Create systemd directory
     mkdir -p "$systemd_dir"
-    
-    # Process and copy template files
-    local templates_dir="$PROJECT_ROOT/quadlet"
-    local prowlarr_defs_dir="$PROJECT_ROOT/prowlarr-definitions"
     
     # Check for templates
     if [[ ! -d "$templates_dir" ]]; then
@@ -393,6 +402,15 @@ setup_quadlet() {
     for template in "$templates_dir"/*; do
         local filename
         filename=$(basename "$template")
+        
+        # Skip optional services if not enabled
+        if [[ "$filename" == "plex.container" && "$PLEX_ENABLED" != "true" ]]; then
+            continue
+        fi
+        if [[ "$filename" == "watchstate.container" && "$PLEX_ENABLED" != "true" ]]; then
+            continue
+        fi
+        
         local output_file="$systemd_dir/$filename"
         
         # Replace template variables (no WIREGUARD_PRIVATE_KEY - that goes in separate file)
@@ -427,12 +445,26 @@ EOF
     chmod 600 "$secret_file"
     print_success "Created: wireguard-secret.yaml (chmod 600)"
     
+    # Create Plex claim secret if enabled
+    if [[ "$PLEX_ENABLED" == "true" && -n "$PLEX_CLAIM" ]]; then
+        print_info "Creating Plex claim secret..."
+        local plex_secret="$systemd_dir/plex-claim.env"
+        cat > "$plex_secret" << EOF
+# Plex Claim Token - AUTO-GENERATED
+# Only needed for first run, can be removed after claiming
+PLEX_CLAIM=$PLEX_CLAIM
+EOF
+        chmod 600 "$plex_secret"
+        print_success "Created: plex-claim.env (chmod 600)"
+    fi
+    
     # Secure the systemd directory
-    chmod 700 "$systemd_dir" 2>/dev/null || true
+    chmod 700 "$systemd_dir"
     
     # Copy prowlarr definitions
-    if [[ -d "$prowlarr_defs_dir" ]]; then
-        cp -r "$prowlarr_defs_dir" "$prowlarr_defs_path"
+    if [[ -d "$PROJECT_ROOT/prowlarr-definitions" ]]; then
+        mkdir -p "$prowlarr_defs_path"
+        cp -r "$PROJECT_ROOT/prowlarr-definitions"/* "$prowlarr_defs_path/"
         # Set SELinux context for prowlarr definitions if needed
         if check_command getenforce && [[ "$(getenforce 2>/dev/null)" != "Disabled" ]]; then
             chcon -R -t container_file_t "$prowlarr_defs_path" 2>/dev/null || true
@@ -451,6 +483,7 @@ EOF
     # Reload systemd
     print_section "Activating Quadlet Services"
     
+    print_info "Reloading systemd daemon..."
     systemctl --user daemon-reload
     print_success "Reloaded systemd user daemon"
     
@@ -473,6 +506,12 @@ EOF
         printf "\\n"
         print_info "Starting services..."
         local services=("vpn-services" "media-automation" "media-streaming" "flaresolverr" "tor-proxy")
+        
+        # Add optional services to start list
+        if [[ "$PLEX_ENABLED" == "true" ]]; then
+            services+=("plex" "watchstate")
+        fi
+        
         local start_errors=0
         local error_output
         
