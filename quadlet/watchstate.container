@@ -1,0 +1,33 @@
+# =============================================================================
+# (OPTIONAL) Watchstate - Sync watch state between Jellyfin and Plex
+# =============================================================================
+# Copy this file to ~/.config/containers/systemd/ to enable Watchstate.
+# Provides WebUI at port 8787 for configuring sync between media servers.
+#
+# See: https://github.com/arabcoders/watchstate
+
+[Unit]
+Description=Watchstate - Media Server Watch State Sync
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/arabcoders/watchstate:v1.0.5
+ContainerName=watchstate
+
+# For Podman rootless, use 0:0 (maps to host user)
+User=0:0
+
+Environment=TZ={{TZ}}
+
+Volume=watchstate-config:/config
+
+Network=home-stream.network
+PublishPort=8787:8080
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,47 @@
+# =============================================================================
+# (OPTIONAL) Plex Media Server - Alternative to Jellyfin
+# =============================================================================
+# This container shares media with Jellyfin - both can run simultaneously.
+#
+# SETUP:
+#   1. Copy to ~/.config/containers/systemd/
+#   2. Get claim token: make plex-claim
+#   3. Create plex-claim.env in the same directory:
+#      PLEX_CLAIM=claim-xxxxxxxxxxxx
+#   4. Reload: systemctl --user daemon-reload
+#   5. Start: systemctl --user start plex
+#
+# The claim token is only needed for the first run.
+
+[Unit]
+Description=Plex Media Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=lscr.io/linuxserver/plex:1.41.4
+ContainerName=plex
+
+Environment=PUID={{PUID}}
+Environment=PGID={{PGID}}
+Environment=TZ={{TZ}}
+Environment=VERSION=docker
+
+# Claim token for first run (create plex-claim.env with PLEX_CLAIM=claim-xxx)
+EnvironmentFile=-%h/.config/containers/systemd/plex-claim.env
+
+Volume=plex-config:/config
+Volume={{DATA_PATH}}/media:/data/media:ro
+
+Network=home-stream.network
+PublishPort=32400:32400
+
+# Intel QuickSync hardware transcoding
+AddDevice=/dev/dri:/dev/dri
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
