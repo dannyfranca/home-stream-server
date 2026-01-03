@@ -26,6 +26,8 @@ A complete, production-ready stack for home media streaming with automated downl
 | [Bazarr](http://localhost:6767)       | 6767  | Subtitle management                |
 | [Jellyfin](http://localhost:8096)     | 8096  | Media streaming server (free)      |
 | [Jellyseerr](http://localhost:5055)   | 5055  | Request management                 |
+| [Plex](http://localhost:32400/web)    | 32400 | Media streaming (optional)         |
+| [Watchstate](http://localhost:8787)   | 8787  | Watch state sync (optional)        |
 
 > *Tor Proxy is internal-only (port 9050 not exposed to host)
 
@@ -48,6 +50,8 @@ A complete, production-ready stack for home media streaming with automated downl
   - [Bazarr](#36-bazarr-httplocalhost6767)
   - [Jellyfin](#37-jellyfin-httplocalhost8096)
   - [Jellyseerr](#38-jellyseerr-httplocalhost5055)
+  - [Plex (Optional)](#39-plex-optional-httplocalhost32400web)
+  - [Watchstate (Optional)](#310-watchstate-optional-httplocalhost8787)
 - [Networking Architecture](#-networking-architecture)
 - [Hardware Transcoding](#-hardware-transcoding-optional)
 - [Troubleshooting](#️-troubleshooting)
@@ -515,6 +519,90 @@ After saving, Bazarr will sync your library and automatically download missing s
    - **Enable Delete**: Allows deleting series from disk via Jellyseerr
 
 > 💡 **Tip**: When you want to remove content, doing it from Jellyseerr is the cleanest method. It will remove the request and instruct Sonarr/Radarr to delete the media files.
+
+---
+
+## 3.9 Plex (Optional) (http://localhost:32400/web)
+
+Plex can run alongside Jellyfin, sharing the same media libraries. Both servers can be active simultaneously.
+
+### Enabling Plex
+
+#### Docker Compose Users
+
+**Option A: Interactive Setup**
+```bash
+make setup  # Select "yes" when asked about Plex
+```
+
+**Option B: Manual Setup**
+1. Uncomment the `plex` and `watchstate` services in `docker-compose.yml`
+2. Uncomment `plex_config` and `watchstate_config` in the volumes section
+3. Get a claim token from https://plex.tv/claim (valid 4 minutes)
+4. Add to `.env`:
+   ```env
+   PLEX_PORT=32400
+   PLEX_CLAIM=claim-xxxxxxxxxxxx
+   ```
+5. Start: `make compose-start`
+
+#### Quadlet Users
+
+**Option A: Interactive Setup**
+```bash
+make setup  # Select Quadlet, then "yes" when asked about Plex
+# Claim token will be saved to ~/.config/containers/systemd/plex-claim.env
+```
+
+**Option B: Manual Setup**
+1. Copy the Plex container files to your Quadlet directory:
+   ```bash
+   cp quadlet/plex.container quadlet/watchstate.container ~/.config/containers/systemd/
+   ```
+2. Get a claim token from https://plex.tv/claim (valid 4 minutes)
+3. Create the claim file:
+   ```bash
+   echo "PLEX_CLAIM=claim-xxxxxxxxxxxx" > ~/.config/containers/systemd/plex-claim.env
+   chmod 600 ~/.config/containers/systemd/plex-claim.env
+   ```
+4. Reload and start:
+   ```bash
+   systemctl --user daemon-reload
+   systemctl --user start plex watchstate
+   ```
+
+### Initial Setup
+
+1. Open http://localhost:32400/web
+2. Sign in with your Plex account
+3. Name your server and configure remote access
+4. Add libraries:
+   - **Movies**: `/data/media/movies`
+   - **TV Shows**: `/data/media/tv`
+
+> 💡 The claim token is only needed for the first run. After claiming, you can delete `plex-claim.env` or remove `PLEX_CLAIM` from `.env`.
+
+---
+
+## 3.10 Watchstate (Optional) (http://localhost:8787)
+
+Watchstate syncs watch history between Jellyfin and Plex bidirectionally.
+
+### Setup
+
+1. Open http://localhost:8787
+2. Add **Jellyfin** backend first:
+   - Type: Jellyfin
+   - URL: `http://jellyfin:8096` (Docker) or `http://media-streaming:8096` (Quadlet)
+   - Get API key from Jellyfin: Dashboard → API Keys
+3. Add **Plex** backend:
+   - Type: Plex
+   - URL: `http://plex:32400` (Docker) or `http://plex:32400` (Quadlet)
+   - Use Plex token (login via Watchstate or provide manually)
+4. Configure sync direction: **Bidirectional** (recommended)
+5. Run initial sync from the dashboard
+
+> 💡 **Tip**: Enable webhooks in both Jellyfin and Plex for instant sync instead of scheduled polling.
 
 ---
 
